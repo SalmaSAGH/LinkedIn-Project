@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import LogoLinkedIn from "@/components/LogoLinkedIn";
 import { Home, MessageCircle, Bell, User, Search } from "lucide-react";
+import Navbar from "@/components/Navbar";
+
+
 
 type UserProfile = {
     id: string;
@@ -24,10 +27,9 @@ export default function ProfilePage() {
     const [bio, setBio] = useState("");
     const [skills, setSkills] = useState<string>("");
     const [image, setImage] = useState("");
-    const [isClient, setIsClient] = useState(false);
+    const [activeTab, setActiveTab] = useState("home");
 
     useEffect(() => {
-        setIsClient(true);
         fetch("/api/profile")
             .then((res) => {
                 if (!res.ok) throw new Error("Failed to fetch profile");
@@ -92,46 +94,7 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navigation améliorée */}
-            <nav className="bg-white shadow-sm sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center">
-                                <LogoLinkedIn className="w-8 h-8 text-blue-600" />
-                                <span className="ml-2 text-xl font-semibold text-blue-700 hidden md:block">LinkedIn</span>
-                            </div>
-
-                            <div className="relative md:w-64">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Rechercher"
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-6">
-                            <NavIcon icon={<Home size={20} />} active={true} />
-                            <NavIcon icon={<MessageCircle size={20} />} />
-                            <NavIcon icon={<Bell size={20} />} />
-                            <NavIcon icon={<User size={20} />} active={isClient && window.location.pathname === "/profile"} />
-
-
-
-                            <button
-                                onClick={() => signOut({ callbackUrl: "/signin" })}
-                                className="text-sm bg-transparent hover:bg-gray-100 text-gray-700 px-3 py-1 rounded-md border border-gray-300 transition-colors duration-200"
-                            >
-                                Déconnexion
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navbar />
 
             {/* Contenu principal */}
             <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -152,7 +115,8 @@ export default function ProfilePage() {
                                             className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                                         />
                                     ) : (
-                                        <div className="w-24 h-24 rounded-full border-4 border-white bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-lg">
+                                        <div
+                                            className="w-24 h-24 rounded-full border-4 border-white bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-lg">
                                             <User className="w-12 h-12 text-gray-500" />
                                         </div>
                                     )}
@@ -306,13 +270,24 @@ export default function ProfilePage() {
 }
 
 // Composant pour les icônes de navigation
-function NavIcon({ icon, active = false }: { icon: React.ReactNode, active?: boolean }) {
+function NavIcon({
+                     icon,
+                     active = false,
+                     onClick,
+                     label
+                 }: {
+    icon: React.ReactNode;
+    active?: boolean;
+    onClick?: () => void;
+    label?: string;
+}) {
     return (
-        <a
-            href="#"
-            className={`p-2 rounded-full ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'} hover:bg-gray-100 transition-colors duration-200`}
+        <button
+            onClick={onClick}
+            className={`flex flex-col items-center p-2 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'} transition-colors duration-200`}
         >
             {icon}
-        </a>
+            {label && <span className="text-xs mt-1">{label}</span>}
+        </button>
     );
 }

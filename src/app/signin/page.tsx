@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import LogoLinkedIn from "../../components/LogoLinkedIn";
 
+
+
 export default function SignIn() {
     const router = useRouter(); // ✅ utilisation correcte
     const [email, setEmail] = useState("");
@@ -21,7 +23,7 @@ export default function SignIn() {
         });
 
         if (res?.ok) {
-            router.push("/profile"); // ✅ redirection correcte
+            router.push("/dashboard"); // ✅ redirection correcte
         } else {
             alert("Échec de connexion. Vérifie tes identifiants.");
         }
