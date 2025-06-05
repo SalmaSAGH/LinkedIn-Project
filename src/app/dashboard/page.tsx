@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
-import LogoLinkedIn from "@/components/LogoLinkedIn";
-import { Home, MessageCircle, Bell, User, Search, MoreHorizontal, ThumbsUp, MessageSquare, Share2, Image as ImageIcon } from "lucide-react";
-import Link from "next/link";
+import { User, MoreHorizontal, ThumbsUp, MessageSquare, Share2, Image as ImageIcon } from "lucide-react";
+
 import Navbar from "@/components/Navbar";
 
 type Post = {
@@ -29,7 +27,7 @@ export default function DashboardPage() {
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [newPost, setNewPost] = useState("");
-    const [activeTab, setActiveTab] = useState("home");
+
 
     type RandomUserApiResponse = {
         results: {
@@ -40,7 +38,7 @@ export default function DashboardPage() {
     };
 
     useEffect(() => {
-        fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+        fetch("/api/posts")
             .then((res) => res.json())
             .then((data) => {
                 const enhancedPosts = data.map((post: any) => ({
@@ -256,24 +254,3 @@ export default function DashboardPage() {
     );
 }
 
-function NavIcon({
-                     icon,
-                     active = false,
-                     onClick,
-                     label
-                 }: {
-    icon: React.ReactNode;
-    active?: boolean;
-    onClick?: () => void;
-    label?: string;
-}) {
-    return (
-        <button
-            onClick={onClick}
-            className={`flex flex-col items-center p-2 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'} transition-colors duration-200`}
-        >
-            {icon}
-            {label && <span className="text-xs mt-1">{label}</span>}
-        </button>
-    );
-}

@@ -5,7 +5,6 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// @ts-ignore
 const handler = NextAuth({
     providers: [
         CredentialsProvider({
@@ -15,16 +14,28 @@ const handler = NextAuth({
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) {
+                    throw new Error('Email et mot de passe requis');
+                }
+
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
                 });
 
                 if (!user) throw new Error('Utilisateur non trouvé');
+                if (!user.password) throw new Error('Mot de passe non défini');
 
-                const passwordCorrect = await bcrypt.compare(credentials.password, user.password);
+                const passwordCorrect = await bcrypt.compare(
+                    credentials.password,
+                    user.password
+                );
                 if (!passwordCorrect) throw new Error('Mot de passe incorrect');
 
-                return { id: user.id, name: user.name, email: user.email };
+                return {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email
+                };
             },
         }),
     ],
@@ -37,11 +48,17 @@ const handler = NextAuth({
     },
     callbacks: {
         async jwt({ token, user }) {
-            if (user) token.id = user.id;
+            if (user) {
+                token.id = user.id;
+            }
             return token;
         },
         async session({ session, token }) {
-            if (token) session.user.id = token.id;
+            if (session.user) {
+                session.user.id = token.id as string;
+                session.user.name = token.name;
+                session.user.email = token.email;
+            }
             return session;
         },
     },
