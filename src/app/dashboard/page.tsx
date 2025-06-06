@@ -8,9 +8,20 @@ import {
     MessageSquare,
     Share2,
     Image as ImageIcon,
+    Send,
 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
+
+type Comment = {
+    id: string;
+    content: string;
+    createdAt: string;
+    user: {
+        name?: string | null;
+        image?: string | null;
+    };
+};
 
 type Post = {
     id: string;
@@ -21,8 +32,10 @@ type Post = {
         name?: string | null;
         image?: string | null;
     };
-    likes: number;
-    comments: number;
+    likesCount: number;
+    commentsCount: number;
+    isLikedByCurrentUser: boolean;
+    comments: Comment[];
 };
 
 type Suggestion = {
@@ -46,17 +59,15 @@ export default function DashboardPage() {
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [newPost, setNewPost] = useState("");
+    const [showComments, setShowComments] = useState<Record<string, boolean>>({});
+    const [newComments, setNewComments] = useState<Record<string, string>>({});
+    const [submittingComment, setSubmittingComment] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         fetch("/api/posts")
             .then((res) => res.json())
             .then((data: Post[]) => {
-                const enhancedPosts = data.map((post) => ({
-                    ...post,
-                    likes: Math.floor(Math.random() * 100),
-                    comments: Math.floor(Math.random() * 20),
-                }));
-                setPosts(enhancedPosts);
+                setPosts(data);
             })
             .finally(() => setLoadingPosts(false));
     }, []);
@@ -95,14 +106,7 @@ export default function DashboardPage() {
 
         if (res.ok) {
             const newCreatedPost: Post = await res.json();
-            setPosts((prev) => [
-                {
-                    ...newCreatedPost,
-                    likes: 0,
-                    comments: 0,
-                },
-                ...prev,
-            ]);
+            setPosts((prev) => [newCreatedPost, ...prev]);
             setNewPost("");
         } else {
             alert("Erreur lors de la création du post");
@@ -121,12 +125,99 @@ export default function DashboardPage() {
         return postDate.toLocaleDateString();
     }
 
-    function handleLikePost(postId: string) {
-        setPosts(
-            posts.map((post) =>
-                post.id === postId ? { ...post, likes: post.likes + 1 } : post
-            )
-        );
+    async function handleLikePost(postId: string) {
+        try {
+            const res = await fetch(`/api/posts/${postId}/like`, {
+                method: "POST",
+            });
+
+            if (res.ok) {
+                const { liked } = await res.json();
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+                        post.id === postId
+                            ? {
+                                ...post,
+                                isLikedByCurrentUser: liked,
+                                likesCount: liked
+                                    ? post.likesCount + 1
+                                    : post.likesCount - 1
+                            }
+                            : post
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Erreur lors du like:", error);
+        }
+    }
+
+    async function toggleComments(postId: string) {
+        const isCurrentlyShown = showComments[postId];
+
+        if (!isCurrentlyShown) {
+            // Charger les commentaires si on les affiche pour la première fois
+            try {
+                const res = await fetch(`/api/posts/${postId}/comments`);
+                if (res.ok) {
+                    const comments = await res.json();
+                    setPosts(prevPosts =>
+                        prevPosts.map(post =>
+                            post.id === postId
+                                ? { ...post, comments }
+                                : post
+                        )
+                    );
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement des commentaires:", error);
+            }
+        }
+
+        setShowComments(prev => ({
+            ...prev,
+            [postId]: !isCurrentlyShown
+        }));
+    }
+
+    async function handleSubmitComment(postId: string, e: React.FormEvent) {
+        e.preventDefault();
+        const content = newComments[postId]?.trim();
+        if (!content) return;
+
+        setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+
+        try {
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content }),
+            });
+
+            if (res.ok) {
+                const newComment = await res.json();
+
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+                        post.id === postId
+                            ? {
+                                ...post,
+                                comments: [newComment, ...post.comments],
+                                commentsCount: post.commentsCount + 1
+                            }
+                            : post
+                    )
+                );
+
+                setNewComments(prev => ({ ...prev, [postId]: "" }));
+            } else {
+                alert("Erreur lors de l'ajout du commentaire");
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'ajout du commentaire:", error);
+        } finally {
+            setSubmittingComment(prev => ({ ...prev, [postId]: false }));
+        }
     }
 
     return (
@@ -214,14 +305,25 @@ export default function DashboardPage() {
                                     <div className="flex justify-between">
                                         <button
                                             onClick={() => handleLikePost(post.id)}
+                                            className={`flex items-center px-3 py-1 rounded transition ${
+                                                post.isLikedByCurrentUser
+                                                    ? "text-blue-600 bg-blue-50"
+                                                    : "text-gray-500 hover:text-blue-600"
+                                            }`}
+                                        >
+                                            <ThumbsUp
+                                                className={`h-5 w-5 mr-1 ${
+                                                    post.isLikedByCurrentUser ? "fill-current" : ""
+                                                }`}
+                                            />
+                                            {post.likesCount} {post.likesCount <= 1 ? "Like" : "Likes"}
+                                        </button>
+                                        <button
+                                            onClick={() => toggleComments(post.id)}
                                             className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded"
                                         >
-                                            <ThumbsUp className="h-5 w-5 mr-1" />
-                                            {post.likes} Aimer
-                                        </button>
-                                        <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded">
                                             <MessageSquare className="h-5 w-5 mr-1" />
-                                            {post.comments} Commentaires
+                                            {post.commentsCount} Commentaire{post.commentsCount !== 1 ? "s" : ""}
                                         </button>
                                         <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded">
                                             <Share2 className="h-5 w-5 mr-1" />
@@ -229,6 +331,70 @@ export default function DashboardPage() {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Section commentaires */}
+                                {showComments[post.id] && (
+                                    <div className="px-6 pb-4 border-t border-gray-100">
+                                        {/* Formulaire d'ajout de commentaire */}
+                                        <form
+                                            onSubmit={(e) => handleSubmitComment(post.id, e)}
+                                            className="flex items-start space-x-3 mt-4"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <User className="text-blue-600 w-4 h-4" />
+                                            </div>
+                                            <div className="flex-1 flex space-x-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Écrivez un commentaire..."
+                                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    value={newComments[post.id] || ""}
+                                                    onChange={(e) => setNewComments(prev => ({
+                                                        ...prev,
+                                                        [post.id]: e.target.value
+                                                    }))}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={!newComments[post.id]?.trim() || submittingComment[post.id]}
+                                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                >
+                                                    <Send className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        {/* Liste des commentaires */}
+                                        <div className="mt-4 space-y-3">
+                                            {post.comments?.map((comment) => (
+                                                <div key={comment.id} className="flex items-start space-x-3">
+                                                    {comment.user?.image ? (
+                                                        <img
+                                                            src={comment.user.image}
+                                                            alt={comment.user.name || "Utilisateur"}
+                                                            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                                            <User className="text-gray-500 w-4 h-4" />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <div className="bg-gray-100 rounded-lg px-3 py-2">
+                                                            <p className="font-medium text-sm">
+                                                                {comment.user?.name || "Utilisateur"}
+                                                            </p>
+                                                            <p className="text-gray-800 text-sm">{comment.content}</p>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {formatPostDate(comment.createdAt)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </article>
                         ))
                     )}

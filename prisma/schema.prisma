@@ -29,6 +29,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   Post Post[]
+
+  Like Like[]
+
+  Comment Comment[]
 }
 
 model Experience {
@@ -63,4 +67,29 @@ model Post {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  Like Like[]
+
+  Comment Comment[]
+}
+
+model Like {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId]) // Un utilisateur ne peut liker qu'une seule fois par post
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
