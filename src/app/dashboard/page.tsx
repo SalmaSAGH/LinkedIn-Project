@@ -1,17 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, MoreHorizontal, ThumbsUp, MessageSquare, Share2, Image as ImageIcon } from "lucide-react";
+import {
+    User,
+    MoreHorizontal,
+    ThumbsUp,
+    MessageSquare,
+    Share2,
+    Image as ImageIcon,
+} from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 
 type Post = {
-    id: number;
+    id: string;
     title: string;
     body: string;
+    createdAt: string;
+    user: {
+        name?: string | null;
+        image?: string | null;
+    };
     likes: number;
     comments: number;
-    time: string;
 };
 
 type Suggestion = {
@@ -21,6 +32,14 @@ type Suggestion = {
     role: string;
 };
 
+type RandomUserApiResponse = {
+    results: {
+        name: { first: string; last: string };
+        picture: { thumbnail: string };
+        login: { uuid: string };
+    }[];
+};
+
 export default function DashboardPage() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -28,24 +47,14 @@ export default function DashboardPage() {
     const [loadingSuggestions, setLoadingSuggestions] = useState(true);
     const [newPost, setNewPost] = useState("");
 
-
-    type RandomUserApiResponse = {
-        results: {
-            name: { first: string; last: string };
-            picture: { thumbnail: string };
-            login: { uuid: string };
-        }[];
-    };
-
     useEffect(() => {
         fetch("/api/posts")
             .then((res) => res.json())
-            .then((data) => {
-                const enhancedPosts = data.map((post: any) => ({
+            .then((data: Post[]) => {
+                const enhancedPosts = data.map((post) => ({
                     ...post,
                     likes: Math.floor(Math.random() * 100),
                     comments: Math.floor(Math.random() * 20),
-                    time: `${Math.floor(Math.random() * 24)}h`
                 }));
                 setPosts(enhancedPosts);
             })
@@ -56,49 +65,74 @@ export default function DashboardPage() {
         fetch("https://randomuser.me/api/?results=5&inc=name,picture,login")
             .then((res) => res.json())
             .then((data: RandomUserApiResponse) => {
-                const roles = ["Développeur Fullstack", "UX Designer", "Product Manager", "Data Scientist", "Marketing Digital"];
+                const roles = [
+                    "Développeur Fullstack",
+                    "UX Designer",
+                    "Product Manager",
+                    "Data Scientist",
+                    "Marketing Digital",
+                ];
                 const users: Suggestion[] = data.results.map((user, index) => ({
                     id: user.login.uuid,
                     name: `${user.name.first} ${user.name.last}`,
                     avatar: user.picture.thumbnail,
-                    role: roles[index % roles.length]
+                    role: roles[index % roles.length],
                 }));
                 setSuggestions(users);
             })
             .finally(() => setLoadingSuggestions(false));
     }, []);
 
-    function handleCreatePost(e: React.FormEvent) {
+    async function handleCreatePost(e: React.FormEvent) {
         e.preventDefault();
         if (!newPost.trim()) return;
 
-        const post: Post = {
-            id: posts.length + 1,
-            title: "Nouvelle publication",
-            body: newPost,
-            likes: 0,
-            comments: 0,
-            time: "À l'instant"
-        };
+        const res = await fetch("/api/posts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: newPost }),
+        });
 
-        setPosts([post, ...posts]);
-        setNewPost("");
+        if (res.ok) {
+            const newCreatedPost: Post = await res.json();
+            setPosts((prev) => [
+                {
+                    ...newCreatedPost,
+                    likes: 0,
+                    comments: 0,
+                },
+                ...prev,
+            ]);
+            setNewPost("");
+        } else {
+            alert("Erreur lors de la création du post");
+        }
     }
 
-    function handleLikePost(postId: number) {
-        setPosts(posts.map(post =>
-            post.id === postId ? { ...post, likes: post.likes + 1 } : post
-        ));
+    function formatPostDate(date: string | Date): string {
+        const now = new Date();
+        const postDate = new Date(date);
+        const diff = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+
+        if (diff < 60) return "il y a quelques secondes";
+        if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+        if (diff < 86400) return `il y a ${Math.floor(diff / 3600)}h`;
+
+        return postDate.toLocaleDateString();
+    }
+
+    function handleLikePost(postId: string) {
+        setPosts(
+            posts.map((post) =>
+                post.id === postId ? { ...post, likes: post.likes + 1 } : post
+            )
+        );
     }
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* Navigation améliorée */}
             <Navbar />
-
-            {/* Contenu principal */}
             <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-4">
-                {/* Colonne principale - 2/3 de largeur */}
                 <section className="lg:col-span-3 space-y-6">
                     {/* Création de post */}
                     <div className="bg-white rounded-lg shadow p-6">
@@ -141,17 +175,31 @@ export default function DashboardPage() {
                         </div>
                     ) : (
                         posts.map((post) => (
-                            <article key={post.id} className="bg-white rounded-lg shadow overflow-hidden">
+                            <article
+                                key={post.id}
+                                className="bg-white rounded-lg shadow overflow-hidden"
+                            >
                                 <div className="p-6">
                                     <div className="flex items-start space-x-4">
-                                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <User className="text-gray-500" />
-                                        </div>
+                                        {post.user?.image ? (
+                                            <img
+                                                src={post.user.image}
+                                                alt={post.user.name || "Utilisateur"}
+                                                className="w-12 h-12 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <User className="text-gray-500" />
+                                            </div>
+                                        )}
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <h2 className="font-semibold text-lg">{post.title}</h2>
-                                                    <p className="text-sm text-gray-500">Utilisateur LinkedIn • {post.time}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {post.user?.name || "Utilisateur"} •{" "}
+                                                        {formatPostDate(post.createdAt)}
+                                                    </p>
                                                 </div>
                                                 <button className="text-gray-400 hover:text-gray-600">
                                                     <MoreHorizontal size={20} />
@@ -162,7 +210,6 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
 
-                                {/* Interactions */}
                                 <div className="px-6 py-3 border-t border-gray-100">
                                     <div className="flex justify-between">
                                         <button
@@ -187,11 +234,13 @@ export default function DashboardPage() {
                     )}
                 </section>
 
-                {/* Colonne de suggestions - 1/3 de largeur */}
+                {/* Suggestions */}
                 <aside className="lg:col-span-1 space-y-6">
+                    {/* Suggestions de connexions */}
                     <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-4">Suggestions de connexions</h3>
-
+                        <h3 className="text-lg font-semibold mb-4">
+                            Suggestions de connexions
+                        </h3>
                         {loadingSuggestions ? (
                             <div className="space-y-4">
                                 {[...Array(3)].map((_, i) => (
@@ -207,7 +256,10 @@ export default function DashboardPage() {
                         ) : (
                             <div className="space-y-4">
                                 {suggestions.map((user) => (
-                                    <div key={user.id} className="flex items-center justify-between">
+                                    <div
+                                        key={user.id}
+                                        className="flex items-center justify-between"
+                                    >
                                         <div className="flex items-center space-x-3">
                                             <img
                                                 src={user.avatar}
@@ -228,23 +280,28 @@ export default function DashboardPage() {
                         )}
                     </div>
 
-                    {/* Section "Qui a consulté votre profil" */}
+                    {/* Section profil / actualités */}
                     <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-4">Qui a consulté votre profil</h3>
+                        <h3 className="text-lg font-semibold mb-4">
+                            Qui a consulté votre profil
+                        </h3>
                         <p className="text-gray-500 text-sm">12 personnes cette semaine</p>
                         <button className="mt-3 text-blue-600 text-sm font-medium hover:underline">
                             Voir tous
                         </button>
                     </div>
 
-                    {/* Section "Actualités" */}
                     <div className="bg-white rounded-lg shadow p-6">
                         <h3 className="text-lg font-semibold mb-4">Actualités</h3>
                         <div className="space-y-3">
-                            <p className="text-sm font-medium">Les nouvelles tendances tech en 2023</p>
+                            <p className="text-sm font-medium">
+                                Les nouvelles tendances tech en 2023
+                            </p>
                             <p className="text-xs text-gray-500">2h • 125 lectures</p>
 
-                            <p className="text-sm font-medium">Comment améliorer votre réseau professionnel</p>
+                            <p className="text-sm font-medium">
+                                Comment améliorer votre réseau professionnel
+                            </p>
                             <p className="text-xs text-gray-500">5h • 89 lectures</p>
                         </div>
                     </div>
@@ -253,4 +310,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-

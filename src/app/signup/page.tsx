@@ -13,19 +13,32 @@ export default function SignupPage() {
         e.preventDefault();
         setError('');
 
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            body: JSON.stringify(form),
-            headers: { 'Content-Type': 'application/json' },
-        });
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                body: JSON.stringify(form),
+                headers: { 'Content-Type': 'application/json' },
+            });
 
-        if (!res.ok) {
-            const data = await res.json();
-            setError(data.message || 'Erreur');
-            return;
+            let data;
+            try {
+                data = await res.json(); // on essaie de parser le JSON quelle que soit la réponse
+            } catch (err) {
+                console.error('Erreur JSON :', err);
+                setError("Erreur inattendue");
+                return;
+            }
+
+            if (!res.ok) {
+                setError(data.error || 'Erreur');
+                return;
+            }
+
+            router.push('/signin');
+        } catch (err) {
+            console.error("Erreur réseau : ", err);
+            setError("Erreur réseau");
         }
-
-        router.push('/signin');
     };
 
     return (
