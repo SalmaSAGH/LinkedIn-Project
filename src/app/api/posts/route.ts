@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
 
 export async function GET() {
     try {
@@ -22,6 +29,7 @@ export async function GET() {
             include: {
                 user: {
                     select: {
+                        id: true,
                         name: true,
                         image: true,
                     },
@@ -45,13 +53,14 @@ export async function GET() {
                         include: {
                             user: {
                                 select: {
+                                    id: true,
                                     name: true,
                                     image: true,
                                 },
                             },
                         },
                         orderBy: { createdAt: "desc" },
-                        take: 3, // Limiter à 3 commentaires par défaut
+                        take: 3,
                     })
                 ]);
 
@@ -61,6 +70,7 @@ export async function GET() {
                     commentsCount,
                     isLikedByCurrentUser: !!userLike,
                     comments,
+                    canEdit: currentUser?.id === post.userId, // Nouveau champ
                 };
             })
         );
@@ -75,15 +85,28 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { content } = await req.json();
+        // Vérifiez la taille du corps de la requête
+        const contentLength = Number(req.headers.get('content-length') || 0);
+        if (contentLength > 4 * 1024 * 1024) { // 4MB max
+            return NextResponse.json(
+                { error: "La taille de l'image ne doit pas dépasser 4MB" },
+                { status: 413 }
+            );
+        }
 
-        if (!content?.trim()) {
-            return NextResponse.json({ error: "Le contenu est requis" }, { status: 400 });
+        const formData = await req.formData();
+        const content = formData.get('content') as string;
+        const imageFile = formData.get('image') as File | null;
+
+        if (!content?.trim() && !imageFile) {
+            return NextResponse.json(
+                { error: "Le contenu ou une image est requis" },
+                { status: 400 }
+            );
         }
 
         const user = await prisma.user.findUnique({
@@ -94,15 +117,51 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
+        // Traitement de l'image
+        let imageUrl = null;
+        if (imageFile) {
+            // Vérifiez la taille du fichier
+            if (imageFile.size > 4 * 1024 * 1024) {
+                return NextResponse.json(
+                    { error: "La taille de l'image ne doit pas dépasser 4MB" },
+                    { status: 413 }
+                );
+            }
+
+            // Convertir en base64
+            const arrayBuffer = await imageFile.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64Image = buffer.toString('base64');
+            const dataUri = `data:${imageFile.type};base64,${base64Image}`;
+
+            try {
+                const result = await cloudinary.uploader.upload(dataUri, {
+                    folder: "linkedin-clone/posts",
+                    resource_type: "auto",
+                    quality: "auto:good", // Optimisation qualité/taille
+                });
+                imageUrl = result.secure_url;
+            } catch (error) {
+                console.error("Erreur Cloudinary:", error);
+                return NextResponse.json(
+                    { error: "Échec de l'upload de l'image" },
+                    { status: 500 }
+                );
+            }
+        }
+
+        // Création du post
         const post = await prisma.post.create({
             data: {
                 title: user.name ?? "Utilisateur",
                 body: content,
                 userId: user.id,
+                imageUrl,
             },
             include: {
                 user: {
                     select: {
+                        id: true,
                         name: true,
                         image: true,
                     },
@@ -116,9 +175,117 @@ export async function POST(req: NextRequest) {
             likesCount: 0,
             commentsCount: 0,
             comments: [],
+            canEdit: true,
         });
+
     } catch (error) {
         console.error("Erreur lors de la création du post:", error);
+        return NextResponse.json(
+            { error: "Erreur serveur" },
+            { status: 500 }
+        );
+    }
+}
+export async function PUT(req: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+        }
+
+        const { postId, content } = await req.json();
+
+        if (!content?.trim()) {
+            return NextResponse.json({ error: "Le contenu est requis" }, { status: 400 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+        }
+
+        // Vérifier que l'utilisateur est le propriétaire du post
+        const existingPost = await prisma.post.findUnique({
+            where: { id: postId },
+        });
+
+        if (!existingPost) {
+            return NextResponse.json({ error: "Post introuvable" }, { status: 404 });
+        }
+
+        if (existingPost.userId !== user.id) {
+            return NextResponse.json({ error: "Non autorisé à modifier ce post" }, { status: 403 });
+        }
+
+        const updatedPost = await prisma.post.update({
+            where: { id: postId },
+            data: {
+                body: content,
+                updatedAt: new Date(),
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+
+        return NextResponse.json(updatedPost);
+    } catch (error) {
+        console.error("Erreur lors de la modification du post:", error);
+        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+        }
+
+        const { postId } = await req.json();
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+        }
+
+        // Vérifier que l'utilisateur est le propriétaire du post
+        const existingPost = await prisma.post.findUnique({
+            where: { id: postId },
+        });
+
+        if (!existingPost) {
+            return NextResponse.json({ error: "Post introuvable" }, { status: 404 });
+        }
+
+        if (existingPost.userId !== user.id) {
+            return NextResponse.json({ error: "Non autorisé à supprimer ce post" }, { status: 403 });
+        }
+
+        // Supprimer les likes et commentaires associés puis le post
+        await prisma.$transaction([
+            prisma.like.deleteMany({ where: { postId } }),
+            prisma.comment.deleteMany({ where: { postId } }),
+            prisma.post.delete({ where: { id: postId } }),
+        ]);
+
+        return NextResponse.json({ message: "Post supprimé avec succès" });
+    } catch (error) {
+        console.error("Erreur lors de la suppression du post:", error);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 }
