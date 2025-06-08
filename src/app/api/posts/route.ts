@@ -221,11 +221,12 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "Non autorisé à modifier ce post" }, { status: 403 });
         }
 
+        // Mise à jour du post (updatedAt sera géré automatiquement par Prisma)
         const updatedPost = await prisma.post.update({
             where: { id: postId },
             data: {
                 body: content,
-                updatedAt: new Date(),
+                // Ne pas inclure updatedAt ici - Prisma le gère automatiquement
             },
             include: {
                 user: {
@@ -238,7 +239,38 @@ export async function PUT(req: NextRequest) {
             },
         });
 
-        return NextResponse.json(updatedPost);
+        // Récupérer les informations supplémentaires comme dans GET
+        const [likesCount, commentsCount, userLike, comments] = await Promise.all([
+            prisma.like.count({ where: { postId: updatedPost.id } }),
+            prisma.comment.count({ where: { postId: updatedPost.id } }),
+            prisma.like.findFirst({
+                where: { postId: updatedPost.id, userId: user.id }
+            }),
+            prisma.comment.findMany({
+                where: { postId: updatedPost.id },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            image: true,
+                        },
+                    },
+                },
+                orderBy: { createdAt: "desc" },
+                take: 3,
+            })
+        ]);
+
+        return NextResponse.json({
+            ...updatedPost,
+            likesCount,
+            commentsCount,
+            isLikedByCurrentUser: !!userLike,
+            comments,
+            canEdit: true,
+        });
+
     } catch (error) {
         console.error("Erreur lors de la modification du post:", error);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
-import LogoLinkedIn from "@/components/LogoLinkedIn";
-import { Home, MessageCircle, Bell, User, Search } from "lucide-react";
+import { User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
 
@@ -27,7 +25,7 @@ export default function ProfilePage() {
     const [bio, setBio] = useState("");
     const [skills, setSkills] = useState<string>("");
     const [image, setImage] = useState("");
-    const [activeTab, setActiveTab] = useState("home");
+
 
     useEffect(() => {
         fetch("/api/profile")
@@ -266,28 +264,5 @@ export default function ProfilePage() {
                 </div>
             </main>
         </div>
-    );
-}
-
-// Composant pour les icônes de navigation
-function NavIcon({
-                     icon,
-                     active = false,
-                     onClick,
-                     label
-                 }: {
-    icon: React.ReactNode;
-    active?: boolean;
-    onClick?: () => void;
-    label?: string;
-}) {
-    return (
-        <button
-            onClick={onClick}
-            className={`flex flex-col items-center p-2 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'} transition-colors duration-200`}
-        >
-            {icon}
-            {label && <span className="text-xs mt-1">{label}</span>}
-        </button>
     );
 }

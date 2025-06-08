@@ -18,6 +18,7 @@ import {
 
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 type Comment = {
     id: string;
@@ -67,6 +68,8 @@ type RandomUserApiResponse = {
 };
 
 
+
+
 function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
@@ -90,6 +93,7 @@ function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
 }
 
 export default function DashboardPage() {
+    const router = useRouter();
     const [posts, setPosts] = useState<Post[]>([]);
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(true);
@@ -440,7 +444,9 @@ export default function DashboardPage() {
         }
     }
 
-    const handleImageClick = (imageUrl: string) => {
+    const handleImageClick = (imageUrl: string | undefined) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         setSelectedImage(imageUrl);
     };
 
@@ -551,7 +557,13 @@ export default function DashboardPage() {
                                                 <div>
                                                     <h2 className="font-semibold text-lg">{post.title}</h2>
                                                     <p className="text-sm text-gray-500">
-                                                        {post.user?.name || "Utilisateur"} •{" "}
+                                                        <button
+                                                            onClick={() => post.user?.id && router.push(`/profile/${post.user.id}`)}
+                                                            className="hover:underline hover:text-blue-600"
+                                                        >
+                                                            {post.user?.name || "Utilisateur"}
+                                                        </button>
+                                                        •{" "}
                                                         {formatPostDate(post.createdAt)}
                                                         {post.updatedAt && post.updatedAt !== post.createdAt && (
                                                             <span
