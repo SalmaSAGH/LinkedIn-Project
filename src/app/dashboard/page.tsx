@@ -59,15 +59,6 @@ type Suggestion = {
     role: string;
 };
 
-type RandomUserApiResponse = {
-    results: {
-        name: { first: string; last: string };
-        picture: { thumbnail: string };
-        login: { uuid: string };
-    }[];
-};
-
-
 
 
 function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
@@ -106,6 +97,7 @@ export default function DashboardPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
 
     // États pour l'édition
     const [editingPost, setEditingPost] = useState<string | null>(null);
@@ -126,28 +118,55 @@ export default function DashboardPage() {
     }, []);
 
     useEffect(() => {
-        fetch("https://randomuser.me/api/?results=5&inc=name,picture,login")
+        // Récupérer les suggestions depuis votre API
+        fetch("/api/users/suggestions")
             .then((res) => res.json())
-            .then((data: RandomUserApiResponse) => {
-                const roles = [
-                    "Développeur Fullstack",
-                    "UX Designer",
-                    "Product Manager",
-                    "Data Scientist",
-                    "Marketing Digital",
-                ];
-                const users: Suggestion[] = data.results.map((user, index) => ({
-                    id: user.login.uuid,
-                    name: `${user.name.first} ${user.name.last}`,
-                    avatar: user.picture.thumbnail,
-                    role: roles[index % roles.length],
-                }));
-                setSuggestions(users);
+            .then((data: Suggestion[]) => {
+                setSuggestions(data);
             })
             .finally(() => setLoadingSuggestions(false));
     }, []);
 
+    useEffect(() => {
+        const fetchSentRequests = async () => {
+            try {
+                const res = await fetch("/api/friendships/sent-requests");
+                if (res.ok) {
+                    const data = await res.json();
+                    const requestsMap = data.reduce((acc: Record<string, boolean>, request: any) => {
+                        acc[request.receiverId] = true;
+                        return acc;
+                    }, {});
+                    setSentRequests(requestsMap);
+                }
+            } catch (error) {
+                console.error("Error fetching sent requests:", error);
+            }
+        };
 
+        fetchSentRequests();
+    }, []);
+
+    const followUser = async (userId: string) => {
+        try {
+            const res = await fetch("/api/friendships", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ receiverId: userId }),
+            });
+
+            if (res.ok) {
+                // Mettre à jour l'état local
+                setSentRequests(prev => ({ ...prev, [userId]: true }));
+                alert("Demande de connexion envoyée");
+            } else {
+                alert("Erreur lors de l'envoi de la demande");
+            }
+        } catch (error) {
+            console.error("Erreur:", error);
+            alert("Erreur lors de l'envoi de la demande");
+        }
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -847,10 +866,7 @@ export default function DashboardPage() {
                         ) : (
                             <div className="space-y-4">
                                 {suggestions.map((user) => (
-                                    <div
-                                        key={user.id}
-                                        className="flex items-center justify-between"
-                                    >
+                                    <div key={user.id} className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
                                             <img
                                                 src={user.avatar}
@@ -862,8 +878,16 @@ export default function DashboardPage() {
                                                 <p className="text-sm text-gray-500">{user.role}</p>
                                             </div>
                                         </div>
-                                        <button className="text-blue-600 text-sm font-medium hover:underline">
-                                            Suivre
+                                        <button
+                                            onClick={() => followUser(user.id)}
+                                            disabled={sentRequests[user.id]}
+                                            className={`text-sm font-medium px-3 py-1 rounded-md ${
+                                                sentRequests[user.id]
+                                                    ? "text-gray-500 bg-gray-100 cursor-default"
+                                                    : "text-blue-600 hover:underline"
+                                            }`}
+                                        >
+                                            {sentRequests[user.id] ? "Demandé" : "Suivre"}
                                         </button>
                                     </div>
                                 ))}

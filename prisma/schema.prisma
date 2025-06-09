@@ -33,6 +33,13 @@ model User {
   Like Like[]
 
   Comment Comment[]
+
+  // Relations pour les amitiés
+  sentFriendships     Friendship[] @relation("sentFriendships")
+  receivedFriendships Friendship[] @relation("receivedFriendships")
+
+  // Relation pour les notifications
+  notifications Notification[]
 }
 
 model Experience {
@@ -94,4 +101,30 @@ model Comment {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("sentFriendships", fields: [senderId], references: [id])
+  receiver User @relation("receivedFriendships", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // FRIEND_REQUEST, FRIEND_REQUEST_RESPONSE, etc.
+  content   String
+  read      Boolean  @default(false)
+  metadata  Json? // Données supplémentaires
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

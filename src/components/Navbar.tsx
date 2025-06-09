@@ -6,14 +6,42 @@ import LogoLinkedIn from "@/components/LogoLinkedIn";
 import { Home, MessageCircle, Bell, User, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
     const pathname = usePathname();
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUnreadCount = async () => {
+            try {
+                const res = await fetch("/api/notifications/unread-count");
+                if (!res.ok) throw new Error("Failed to fetch");
+                const data = await res.json();
+                setUnreadCount(data.count || 0);
+            } catch (error) {
+                console.error("Error fetching unread count:", error);
+                setUnreadCount(0);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        // Fetch immédiatement
+        fetchUnreadCount();
+
+        // Configurer un intervalle pour rafraîchir périodiquement
+        const interval = setInterval(fetchUnreadCount, 30000); // 30 secondes
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <nav className="bg-white shadow-sm sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
+                    {/* Partie gauche */}
                     <div className="flex items-center space-x-4">
                         <Link href="/dashboard" className="flex items-center">
                             <LogoLinkedIn className="w-8 h-8 text-blue-600" />
@@ -32,6 +60,7 @@ export default function Navbar() {
                         </div>
                     </div>
 
+                    {/* Partie droite */}
                     <div className="flex items-center space-x-6">
                         <NavIcon
                             icon={<Home size={20} />}
@@ -46,7 +75,16 @@ export default function Navbar() {
                             label="Messages"
                         />
                         <NavIcon
-                            icon={<Bell size={20} />}
+                            icon={
+                                <div className="relative">
+                                    <Bell size={20} />
+                                    {!isLoading && unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                            {unreadCount > 9 ? "9+" : unreadCount}
+                                        </span>
+                                    )}
+                                </div>
+                            }
                             active={pathname === "/notifications"}
                             href="/notifications"
                             label="Notifications"

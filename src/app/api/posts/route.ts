@@ -25,6 +25,19 @@ export async function GET() {
 
         // Récupérer les posts de base
         const posts = await prisma.post.findMany({
+            where: {
+                OR: [
+                    { userId: currentUser?.id }, // Posts de l'utilisateur
+                    {
+                        user: {
+                            OR: [
+                                { sentFriendships: { some: { receiverId: currentUser?.id, status: "ACCEPTED" } } },
+                                { receivedFriendships: { some: { senderId: currentUser?.id, status: "ACCEPTED" } } }
+                            ]
+                        }
+                    } // Posts des amis
+                ]
+            },
             orderBy: { createdAt: "desc" },
             include: {
                 user: {
