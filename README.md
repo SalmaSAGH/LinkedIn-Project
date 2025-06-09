@@ -26,7 +26,7 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 - ✅ **Création/Modification/Suppression de publications avec possibilité de publier des photos**  
 - ✅ **Likes** (1 seul par utilisateur par post)  
 - ✅ **Commentaires** sur les publications avec possibilité de modifier et supprimer 
-- 🔜 Suggestions de connexions
+- ✅ Suggestions de connexions
 - 🔜 Messagerie
 - 🔜 Notifications en temps réel  
 - 🔜 Export du profil en **PDF**
