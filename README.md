@@ -23,12 +23,12 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 - ✅ Authentification utilisateur (signup / login / logout)  
 - ✅ Création et modification de **profil utilisateur**    
 - ✅ **Dashboard** personnalisé après connexion  
-- ✅ **Création/Modification/Suppression de publications avec possibilité de publier des photos**  
+- ✅ **Création/Modification/Suppression** de publications avec possibilité de publier des photos
 - ✅ **Likes** (1 seul par utilisateur par post)  
 - ✅ **Commentaires** sur les publications avec possibilité de modifier et supprimer 
-- ✅ Suggestions de connexions
+- ✅ Suggestions de connexions(**avec notifications**), abonnement et désabonnement entre utilisateurs
+- 🔜 Notifications en temps réel (like, comment)  
 - 🔜 Messagerie
-- 🔜 Notifications en temps réel  
 - 🔜 Export du profil en **PDF**
 
 ---
