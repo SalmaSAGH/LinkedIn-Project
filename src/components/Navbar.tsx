@@ -7,6 +7,7 @@ import { Home, MessageCircle, Bell, User, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -63,13 +64,13 @@ export default function Navbar() {
                     {/* Partie droite */}
                     <div className="flex items-center space-x-6">
                         <NavIcon
-                            icon={<Home size={20} />}
+                            icon={<Home size={20}/>}
                             active={pathname === "/dashboard"}
                             href="/dashboard"
                             label="Accueil"
                         />
                         <NavIcon
-                            icon={<MessageCircle size={20} />}
+                            icon={<MessageCircle size={20}/>}
                             active={pathname === "/messages"}
                             href="/messages"
                             label="Messages"
@@ -77,9 +78,10 @@ export default function Navbar() {
                         <NavIcon
                             icon={
                                 <div className="relative">
-                                    <Bell size={20} />
+                                    <Bell size={20}/>
                                     {!isLoading && unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                        <span
+                                            className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                                             {unreadCount > 9 ? "9+" : unreadCount}
                                         </span>
                                     )}
@@ -90,18 +92,20 @@ export default function Navbar() {
                             label="Notifications"
                         />
                         <NavIcon
-                            icon={<User size={20} />}
+                            icon={<User size={20}/>}
                             active={pathname === "/profile"}
                             href="/profile"
                             label="Profil"
                         />
 
                         <button
-                            onClick={() => signOut({ callbackUrl: "/signin" })}
-                            className="text-sm bg-transparent hover:bg-gray-100 text-gray-700 px-3 py-1 rounded-md border border-gray-300 transition-colors duration-200"
+                            onClick={() => signOut({callbackUrl: "/signin"})}
+                            className="flex items-center gap-2 text-sm font-medium bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-full border border-red-200 transition-all duration-200"
                         >
+                            <LogOut size={16}/>
                             Déconnexion
                         </button>
+
                     </div>
                 </div>
             </div>

@@ -3,15 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+// Type pour les params avec Promise
+type ParamsType = Promise<{ postId: string }>;
+
 export async function GET(
     req: NextRequest,
-    { params }: { params: { postId: string } }
+    { params }: { params: ParamsType }
 ) {
     try {
-        const { postId } = params;
+        const { postId } = await params; // Ajout de await ici
         const session = await getServerSession(authOptions);
 
-        // Récupérer l'utilisateur connecté si une session existe
         let currentUser = null;
         if (session?.user?.email) {
             currentUser = await prisma.user.findUnique({
@@ -34,7 +36,6 @@ export async function GET(
             orderBy: { createdAt: "desc" },
         });
 
-        // Ajouter le champ canEdit pour chaque commentaire
         const commentsWithEditPermission = comments.map(comment => ({
             ...comment,
             canEdit: currentUser?.id === comment.userId,
@@ -49,23 +50,22 @@ export async function GET(
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { postId: string } }
+    { params }: { params: ParamsType }
 ) {
     try {
+        const { postId } = await params; // Ajout de await ici
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { postId } = params;
         const { content } = await req.json();
 
         if (!content?.trim()) {
             return NextResponse.json({ error: "Le contenu du commentaire est requis" }, { status: 400 });
         }
 
-        // Vérifier si le post existe
         const post = await prisma.post.findUnique({
             where: { id: postId },
         });
@@ -74,7 +74,6 @@ export async function POST(
             return NextResponse.json({ error: "Post introuvable" }, { status: 404 });
         }
 
-        // Trouver l'utilisateur
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
         });
@@ -83,7 +82,6 @@ export async function POST(
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
-        // Créer le commentaire
         const comment = await prisma.comment.create({
             data: {
                 content: content.trim(),
@@ -113,9 +111,10 @@ export async function POST(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { postId: string } }
+    //{ params }: { params: ParamsType }
 ) {
     try {
+        //const { postId } = await params; // Ajout de await ici
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
@@ -136,7 +135,6 @@ export async function PUT(
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
-        // Vérifier que l'utilisateur est le propriétaire du commentaire
         const existingComment = await prisma.comment.findUnique({
             where: { id: commentId },
         });
@@ -178,9 +176,10 @@ export async function PUT(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { postId: string } }
+    //{ params }: { params: ParamsType }
 ) {
     try {
+        //const { postId } = await params; // Ajout de await ici
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
@@ -197,7 +196,6 @@ export async function DELETE(
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
-        // Vérifier que l'utilisateur est le propriétaire du commentaire
         const existingComment = await prisma.comment.findUnique({
             where: { id: commentId },
         });

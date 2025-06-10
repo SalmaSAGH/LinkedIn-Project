@@ -127,26 +127,6 @@ export default function DashboardPage() {
             .finally(() => setLoadingSuggestions(false));
     }, []);
 
-    useEffect(() => {
-        const fetchSentRequests = async () => {
-            try {
-                const res = await fetch("/api/friendships/sent-requests");
-                if (res.ok) {
-                    const data = await res.json();
-                    const requestsMap = data.reduce((acc: Record<string, boolean>, request: any) => {
-                        acc[request.receiverId] = true;
-                        return acc;
-                    }, {});
-                    setSentRequests(requestsMap);
-                }
-            } catch (error) {
-                console.error("Error fetching sent requests:", error);
-            }
-        };
-
-        fetchSentRequests();
-    }, []);
-
     const followUser = async (userId: string) => {
         try {
             const res = await fetch("/api/friendships", {

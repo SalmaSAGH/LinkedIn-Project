@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+
 import prisma from "@/lib/prisma";
+import {authOptions} from "@/lib/auth";
+import {getServerSession} from "next-auth";
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { postId: string } }
+    { params }: { params: Promise<{ postId: string }> } // Notez le Promise ici
 ) {
     try {
+        const awaitedParams = await params; // Attendre les params
+        const { postId } = awaitedParams;
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { postId } = params;
+
 
         // Vérifier si le post existe
         const post = await prisma.post.findUnique({

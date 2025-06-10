@@ -22,7 +22,7 @@ export async function GET() {
         const notifications = await prisma.notification.findMany({
             where: { userId: user.id },
             orderBy: { createdAt: "desc" },
-            take: 10 // Limiter à 10 notifications
+            take: 10
         });
 
         return NextResponse.json(notifications);
@@ -39,7 +39,7 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { notificationId, action } = await req.json(); // action: "ACCEPT" ou "REJECT" pour les demandes
+        const { notificationId, action } = await req.json();
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
@@ -50,12 +50,9 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
-        // Marquer comme lue ou traiter l'action
         if (action) {
             // Gérer l'acceptation/rejet d'une demande d'amitié
-            // (voir la route friendships pour l'implémentation complète)
         } else {
-            // Juste marquer comme lue
             await prisma.notification.update({
                 where: { id: notificationId, userId: user.id },
                 data: { read: true }
@@ -65,6 +62,40 @@ export async function PUT(req: Request) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Erreur lors de la mise à jour de la notification:", error);
+        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    }
+}
+
+// Nouvelle méthode DELETE pour supprimer les notifications
+export async function DELETE(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true }
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+        }
+
+        const { notificationIds } = await req.json();
+
+        // Supprimer les notifications spécifiées
+        await prisma.notification.deleteMany({
+            where: {
+                id: { in: notificationIds },
+                userId: user.id
+            }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Erreur lors de la suppression des notifications:", error);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 }
