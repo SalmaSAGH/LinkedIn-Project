@@ -34,30 +34,40 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 ---
 ## ⚙️ Installation locale
 
-1. **Cloner le projet**  
-git clone https://github.com/SalmaSAGH/LinkedIn-Project.git  
-cd LinkedIn-Project  
-
-2. **Installer les dépendances**  
+### 1. Cloner le projet
+```sh
+git clone https://github.com/SalmaSAGH/LinkedIn-Project.git
+cd LinkedIn-Project
+```
+---
+### 2. Installer les dépendances
+```sh
 npm install  
-
-3. **Configurer les variables d’environnement**  
+```
+### 3. Configurer les variables d’environnement
 
 Créer un fichier `.env` à la racine du projet avec le contenu suivant (adapter selon ton SGBD) :  
+```sh
 DATABASE_URL="postgresql://user:password@localhost:5432/linkedindb"  
 NEXTAUTH_SECRET="une-cle-secrete-pour-les-tokens"  
-
-4. **Créer la base de données et générer les tables**  
+```
+### 4. Créer la base de données et générer les tables
+```sh 
 npx prisma migrate dev --name init  
-
-5. **Lancer l’application en développement**  
-npm run dev  
+```
+### 6. Lancer l’application en développement
+```sh
+npm run dev
+```
 
 ➡️ Accès sur : http://localhost:3000  
 
 ### 🧪 Outils utiles  
 Visualiser la base de données :  
+```sh
 npx prisma studio  
-
+```
 Générer le client Prisma après modification du schéma :  
+```sh
 npx prisma generate
+```
