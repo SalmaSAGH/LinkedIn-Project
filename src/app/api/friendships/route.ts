@@ -4,6 +4,41 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+
+// app/api/friendships/sent-requests/route.ts
+export async function GET() {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true }
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+        }
+
+        const sentRequests = await prisma.friendship.findMany({
+            where: {
+                senderId: user.id,
+                status: "PENDING" // Seulement les demandes en attente
+            },
+            select: {
+                receiverId: true
+            }
+        });
+
+        return NextResponse.json(sentRequests);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des demandes:", error);
+        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -20,6 +55,50 @@ export async function POST(req: Request) {
 
         if (!sender) {
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+        }
+
+        const existingFriendship = await prisma.friendship.findFirst({
+            where: {
+                OR: [
+                    {
+                        senderId: sender.id,
+                        receiverId
+                    },
+                    {
+                        senderId: receiverId,
+                        receiverId: sender.id
+                    }
+                ]
+            }
+        });
+
+        if (existingFriendship) {
+            if (existingFriendship.status === "REJECTED") {
+                // Supprimer l'ancienne demande rejetée
+                await prisma.friendship.delete({
+                    where: { id: existingFriendship.id }
+                });
+            } else {
+                return NextResponse.json(
+                    {
+                        error: existingFriendship.status === "PENDING"
+                            ? "Une demande est déjà en attente"
+                            : "Vous êtes déjà connectés"
+                    },
+                    { status: 400 }
+                );
+            }
+        }
+
+        if (existingFriendship) {
+            return NextResponse.json(
+                {
+                    error: existingFriendship.status === "PENDING"
+                        ? "Une demande est déjà en attente"
+                        : "Vous êtes déjà connectés"
+                },
+                { status: 400 }
+            );
         }
 
         // Créer la demande d'amitié

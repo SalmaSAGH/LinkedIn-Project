@@ -58,6 +58,14 @@ type Suggestion = {
     avatar: string;
     role: string;
 };
+type ConnectedUser = {
+    id: string;
+    name?: string;
+    email: string;
+    image?: string;
+};
+
+
 
 
 
@@ -98,6 +106,10 @@ export default function DashboardPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
+    const [friendshipStatus, setFriendshipStatus] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
+    const [connectedUser, setConnectedUser] = useState<ConnectedUser | null>(null);
+
+
 
     // États pour l'édition
     const [editingPost, setEditingPost] = useState<string | null>(null);
@@ -107,6 +119,58 @@ export default function DashboardPage() {
     const [showPostMenu, setShowPostMenu] = useState<Record<string, boolean>>({});
     const [showCommentMenu, setShowCommentMenu] = useState<Record<string, boolean>>({});
 
+
+    useEffect(() => {
+        async function fetchConnectedUser() {
+            try {
+                const res = await fetch("/api/profile");
+                if (res.ok) {
+                    const data = await res.json();
+                    setConnectedUser(data);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération du profil connecté :", error);
+            }
+        }
+
+        fetchConnectedUser();
+    }, []);
+
+
+
+    useEffect(() => {
+        async function fetchSentRequests() {
+            try {
+                const res = await fetch('/api/friendships/sent-requests');
+                if (res.ok) {
+                    const requests = await res.json();
+                    const requestsMap = requests.reduce((acc: Record<string, boolean>, req: { receiverId: string }) => {
+                        acc[req.receiverId] = true;
+                        return acc;
+                    }, {});
+                    setSentRequests(requestsMap);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération des demandes:", error);
+            }
+        }
+        fetchSentRequests();
+    }, []);
+
+    useEffect(() => {
+        async function fetchFriendshipStatuses() {
+            try {
+                const res = await fetch('/api/friendships/statuses');
+                if (res.ok) {
+                    const statuses = await res.json();
+                    setFriendshipStatus(statuses);
+                }
+            } catch (error) {
+                console.error("Erreur:", error);
+            }
+        }
+        fetchFriendshipStatuses();
+    }, []);
 
     useEffect(() => {
         fetch("/api/posts")
@@ -127,6 +191,24 @@ export default function DashboardPage() {
             .finally(() => setLoadingSuggestions(false));
     }, []);
 
+    const cancelRequest = async (userId: string) => {
+        try {
+            const res = await fetch(`/api/friendships/cancel`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ receiverId: userId }),
+            });
+
+            if (res.ok) {
+                setFriendshipStatus(prev => ({ ...prev, [userId]: 'none' }));
+                setSentRequests(prev => ({ ...prev, [userId]: false })); // <-- Ajout ici
+            }
+        } catch (error) {
+            console.error("Erreur:", error);
+        }
+    };
+
+
     const followUser = async (userId: string) => {
         try {
             const res = await fetch("/api/friendships", {
@@ -136,11 +218,10 @@ export default function DashboardPage() {
             });
 
             if (res.ok) {
-                // Mettre à jour l'état local
                 setSentRequests(prev => ({ ...prev, [userId]: true }));
-                alert("Demande de connexion envoyée");
             } else {
-                alert("Erreur lors de l'envoi de la demande");
+                const errorData = await res.json();
+                alert(errorData.error || "Erreur lors de l'envoi de la demande");
             }
         } catch (error) {
             console.error("Erreur:", error);
@@ -461,8 +542,38 @@ export default function DashboardPage() {
             )}
 
             <Navbar/>
-            <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-4">
-                <section className="lg:col-span-3 space-y-6">
+
+            <main className="mt-4 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 px-6">
+
+                {/* Colonne gauche : profil utilisateur (1 col) */}
+                <aside className="lg:col-span-1 space-y-6">
+                    {connectedUser && (
+                        <div className="bg-white rounded-lg shadow p-6 text-center">
+                            {connectedUser.image ? (
+                                <img
+                                    src={connectedUser.image}
+                                    alt="Photo de profil"
+                                    className="w-20 h-20 rounded-full mx-auto mb-2 object-cover"
+                                />
+                            ) : (
+                                <div
+                                    className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">
+                                    <User className="h-10 w-10 text-gray-500"/>
+                                </div>
+                            )}
+                            <h2 className="text-lg font-semibold text-gray-900">{connectedUser.name || "Utilisateur"}</h2>
+                            <p className="text-sm text-gray-600">{connectedUser.email}</p>
+                            <button
+                                onClick={() => router.push(`/profile`)}
+                                className="mt-3 inline-block text-blue-600 text-sm font-medium hover:underline"
+                            >
+                                👁️ Voir mon profil
+                            </button>
+                        </div>
+                    )}
+                </aside>
+
+                <section className="lg:col-span-2 space-y-6">
                     {/* Création de post */}
                     <div className="bg-white rounded-lg shadow p-6">
                         <form onSubmit={handleCreatePost} className="space-y-4">
@@ -640,9 +751,10 @@ export default function DashboardPage() {
                                                                 className="rounded-lg max-h-96 w-full object-contain"
                                                                 quality={80}
                                                             />
-                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <div
+                                                                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <div className="bg-black/50 rounded-full p-2">
-                                                                    <ZoomIn className="h-6 w-6 text-white" />
+                                                                    <ZoomIn className="h-6 w-6 text-white"/>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -854,36 +966,37 @@ export default function DashboardPage() {
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />
                                             <div>
-                                                <p className="font-medium">{user.name}</p>
+                                                {/* Rendre le nom cliquable */}
+                                                <button
+                                                    onClick={() => router.push(`/profile/${user.id}`)}
+                                                    className="font-medium hover:underline hover:text-blue-600 text-left"
+                                                >
+                                                    {user.name}
+                                                </button>
                                                 <p className="text-sm text-gray-500">{user.role}</p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => followUser(user.id)}
-                                            disabled={sentRequests[user.id]}
-                                            className={`text-sm font-medium px-3 py-1 rounded-md ${
-                                                sentRequests[user.id]
-                                                    ? "text-gray-500 bg-gray-100 cursor-default"
-                                                    : "text-blue-600 hover:underline"
-                                            }`}
-                                        >
-                                            {sentRequests[user.id] ? "Demandé" : "Suivre"}
-                                        </button>
+                                        {sentRequests[user.id] ? (
+                                            <button
+                                                onClick={() => cancelRequest(user.id)}
+                                                className="text-sm font-medium px-3 py-1 rounded-md text-red-600 hover:underline"
+                                            >
+                                                Annuler
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => followUser(user.id)}
+                                                className="text-sm font-medium px-3 py-1 rounded-md text-blue-600 hover:underline"
+                                            >
+                                                Suivre
+                                            </button>
+                                        )}
+
+
                                     </div>
                                 ))}
                             </div>
                         )}
-                    </div>
-
-                    {/* Section profil / actualités */}
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold mb-4">
-                            Qui a consulté votre profil
-                        </h3>
-                        <p className="text-gray-500 text-sm">12 personnes cette semaine</p>
-                        <button className="mt-3 text-blue-600 text-sm font-medium hover:underline">
-                            Voir tous
-                        </button>
                     </div>
 
                     <div className="bg-white rounded-lg shadow p-6">

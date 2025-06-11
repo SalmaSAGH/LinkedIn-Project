@@ -25,10 +25,27 @@ export default function UserProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [requestSent, setRequestSent] = useState(false);
+
 
     useEffect(() => {
         fetchProfile();
+        checkIfRequestSent();
     }, [userId]);
+
+    const checkIfRequestSent = async () => {
+        try {
+            const res = await fetch("/api/friendships/sent-requests");
+            if (res.ok) {
+                const requests: { receiverId: string }[] = await res.json();
+                const hasSent = requests.some((r) => r.receiverId === userId);
+                setRequestSent(hasSent);
+            }
+        } catch (err) {
+            console.error("Erreur lors de la vérification des demandes :", err);
+        }
+    };
+
 
     const fetchProfile = async () => {
         try {
@@ -49,7 +66,6 @@ export default function UserProfilePage() {
         }
     };
 
-    // app/profile/[id]/page.tsx
     const handleFriendshipAction = async (action: "remove" | "add") => {
         try {
             setIsProcessing(true);
@@ -58,7 +74,7 @@ export default function UserProfilePage() {
             const res = await fetch("/api/friendships", {
                 method: action === "remove" ? "DELETE" : "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: profile?.id }),
+                body: JSON.stringify({ receiverId: profile?.id }),
             });
 
             const data = await res.json();
@@ -67,7 +83,12 @@ export default function UserProfilePage() {
                 throw new Error(data.error || "Action échouée");
             }
 
-            // Recharger le profil pour mettre à jour le statut
+            if (action === "add") {
+                setRequestSent(true); // on marque la demande comme envoyée
+            } else {
+                setRequestSent(false); // on annule la demande
+            }
+
             await fetchProfile();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erreur inconnue");
@@ -75,6 +96,7 @@ export default function UserProfilePage() {
             setIsProcessing(false);
         }
     };
+
 
     if (loading) return (
         <div className="flex justify-center items-center h-screen">
@@ -194,6 +216,15 @@ export default function UserProfilePage() {
                                             <UserMinus className="h-5 w-5 mr-2" />
                                             {isProcessing ? "En cours..." : "Se désabonner"}
                                         </button>
+                                    ) : requestSent ? (
+                                        <button
+                                            onClick={() => handleFriendshipAction("remove")}
+                                            disabled={isProcessing}
+                                            className="flex items-center px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                        >
+                                            <UserCheck className="h-5 w-5 mr-2" />
+                                            {isProcessing ? "En cours..." : "Annuler"}
+                                        </button>
                                     ) : (
                                         <button
                                             onClick={() => handleFriendshipAction("add")}
@@ -213,6 +244,7 @@ export default function UserProfilePage() {
                                             )}
                                         </button>
                                     )}
+
                                 </div>
                             </div>
                         </div>

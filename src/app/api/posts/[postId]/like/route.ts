@@ -65,6 +65,21 @@ export async function POST(
                     postId: postId,
                 },
             });
+            // Après avoir créé le like, ajoutez:
+            if (!existingLike) {
+                // Créer la notification pour le propriétaire du post
+                await prisma.notification.create({
+                    data: {
+                        userId: post.userId, // Le propriétaire du post
+                        type: "POST_LIKE",
+                        content: `${user.name || "Quelqu'un"} a aimé votre publication`,
+                        metadata: {
+                            postId: post.id,
+                            senderId: user.id
+                        }
+                    }
+                });
+            }
 
             return NextResponse.json({
                 liked: true,

@@ -8,7 +8,7 @@ import LogoLinkedIn from "../../components/LogoLinkedIn";
 
 
 export default function SignIn() {
-    const router = useRouter(); // ✅ utilisation correcte
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error] = useState("");

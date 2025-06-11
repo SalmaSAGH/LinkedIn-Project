@@ -99,6 +99,20 @@ export async function POST(
             },
         });
 
+        // Après avoir créé le commentaire, ajoutez:
+        await prisma.notification.create({
+            data: {
+                userId: post.userId, // Le propriétaire du post
+                type: "POST_COMMENT",
+                content: `${user.name || "Quelqu'un"} a commenté votre publication: "${content.substring(0, 30)}..."`,
+                metadata: {
+                    postId: post.id,
+                    senderId: user.id,
+                    commentId: comment.id
+                }
+            }
+        });
+
         return NextResponse.json({
             ...comment,
             canEdit: true,

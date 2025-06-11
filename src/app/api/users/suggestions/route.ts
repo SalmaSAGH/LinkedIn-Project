@@ -55,7 +55,8 @@ export async function GET() {
                 id: true,
                 name: true,
                 image: true,
-                skills: true
+                skills: true,
+                bio: true
             }
         });
 
@@ -63,7 +64,7 @@ export async function GET() {
             id: user.id,
             name: user.name || "Utilisateur",
             avatar: user.image || "/default-avatar.png",
-            role: user.skills?.[0] || "Membre LinkedIn"
+            role: user.bio || "Membre LinkedIn"
         }));
 
         return NextResponse.json(formattedSuggestions);
