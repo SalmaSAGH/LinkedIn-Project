@@ -82,7 +82,7 @@ function ImageModal({ src, onClose }: { src: string; onClose: () => void }) {
                 />
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition cursor-pointer"
                 >
                     <X className="h-6 w-6 text-white" />
                 </button>
@@ -106,7 +106,7 @@ export default function DashboardPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
-    const [friendshipStatus, setFriendshipStatus] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
+    const [, setFriendshipStatus] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
     const [connectedUser, setConnectedUser] = useState<ConnectedUser | null>(null);
 
 
@@ -565,7 +565,7 @@ export default function DashboardPage() {
                             <p className="text-sm text-gray-600">{connectedUser.email}</p>
                             <button
                                 onClick={() => router.push(`/profile`)}
-                                className="mt-3 inline-block text-blue-600 text-sm font-medium hover:underline"
+                                className="mt-3 inline-block text-blue-600 text-sm font-medium hover:underline cursor-pointer"
                             >
                                 👁️ Voir mon profil
                             </button>
@@ -604,7 +604,7 @@ export default function DashboardPage() {
                                             setImagePreview(null);
                                             setImageFile(null);
                                         }}
-                                        className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70"
+                                        className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70 cursor-pointer"
                                     >
                                         <X className="h-4 w-4"/>
                                     </button>
@@ -628,7 +628,7 @@ export default function DashboardPage() {
                                 <button
                                     type="submit"
                                     disabled={(!newPost.trim() && !imageFile) || isUploading}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
                                 >
                                     {isUploading ? "Publication..." : "Publier"}
                                 </button>
@@ -669,7 +669,7 @@ export default function DashboardPage() {
                                                     <p className="text-sm text-gray-500">
                                                         <button
                                                             onClick={() => post.user?.id && router.push(`/profile/${post.user.id}`)}
-                                                            className="hover:underline hover:text-blue-600"
+                                                            className="hover:underline hover:text-blue-600 cursor-pointer"
                                                         >
                                                             {post.user?.name || "Utilisateur"}
                                                         </button>
@@ -683,7 +683,7 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div className="relative">
                                                     <button
-                                                        className="text-gray-400 hover:text-gray-600"
+                                                        className="text-gray-400 hover:text-gray-600 cursor-pointer"
                                                         onClick={() => setShowPostMenu(prev => ({
                                                             ...prev,
                                                             [post.id]: !prev[post.id]
@@ -696,14 +696,14 @@ export default function DashboardPage() {
                                                             className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                                                             <button
                                                                 onClick={() => startEditingPost(post.id, post.body)}
-                                                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                                             >
                                                                 <Edit3 className="w-4 h-4 mr-2"/>
                                                                 Modifier
                                                             </button>
                                                             <button
                                                                 onClick={() => deletePost(post.id)}
-                                                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer"
                                                             >
                                                                 <Trash2 className="w-4 h-4 mr-2"/>
                                                                 Supprimer
@@ -723,13 +723,13 @@ export default function DashboardPage() {
                                                     <div className="flex justify-end space-x-2 mt-2">
                                                         <button
                                                             onClick={cancelEditingPost}
-                                                            className="px-3 py-1 text-gray-600 hover:text-gray-800"
+                                                            className="px-3 py-1 text-gray-600 hover:text-gray-800 cursor-pointer"
                                                         >
                                                             <X className="w-4 h-4"/>
                                                         </button>
                                                         <button
                                                             onClick={() => savePostEdit(post.id)}
-                                                            className="px-3 py-1 text-green-600 hover:text-green-800"
+                                                            className="px-3 py-1 text-green-600 hover:text-green-800 cursor-pointer"
                                                         >
                                                             <Check className="w-4 h-4"/>
                                                         </button>
@@ -769,7 +769,7 @@ export default function DashboardPage() {
                                     <div className="flex justify-between">
                                         <button
                                             onClick={() => handleLikePost(post.id)}
-                                            className={`flex items-center px-3 py-1 rounded transition ${
+                                            className={`flex items-center px-3 py-1 rounded transition cursor-pointer ${
                                                 post.isLikedByCurrentUser
                                                     ? "text-blue-600 bg-blue-50"
                                                     : "text-gray-500 hover:text-blue-600"
@@ -784,13 +784,13 @@ export default function DashboardPage() {
                                         </button>
                                         <button
                                             onClick={() => toggleComments(post.id)}
-                                            className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded"
+                                            className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded cursor-pointer"
                                         >
                                             <MessageSquare className="h-5 w-5 mr-1"/>
                                             {post.commentsCount} Commentaire{post.commentsCount !== 1 ? "s" : ""}
                                         </button>
                                         <button
-                                            className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded">
+                                            className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded cursor-pointer">
                                             <Share2 className="h-5 w-5 mr-1"/>
                                             Partager
                                         </button>
@@ -823,7 +823,7 @@ export default function DashboardPage() {
                                                 <button
                                                     type="submit"
                                                     disabled={!newComments[post.id]?.trim() || submittingComment[post.id]}
-                                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center cursor-pointer"
                                                 >
                                                     <Send className="w-4 h-4"/>
                                                 </button>
@@ -858,13 +858,13 @@ export default function DashboardPage() {
                                                                 <div className="flex justify-end space-x-2">
                                                                     <button
                                                                         onClick={cancelEditingComment}
-                                                                        className="px-2 py-1 text-gray-600 hover:text-gray-800"
+                                                                        className="px-2 py-1 text-gray-600 hover:text-gray-800 cursor-pointer"
                                                                     >
                                                                         <X className="w-3 h-3"/>
                                                                     </button>
                                                                     <button
                                                                         onClick={() => saveCommentEdit(post.id, comment.id)}
-                                                                        className="px-2 py-1 text-green-600 hover:text-green-800"
+                                                                        className="px-2 py-1 text-green-600 hover:text-green-800 cursor-pointer"
                                                                     >
                                                                         <Check className="w-3 h-3"/>
                                                                     </button>
@@ -888,7 +888,7 @@ export default function DashboardPage() {
                                                                                     ...prev,
                                                                                     [comment.id]: !prev[comment.id]
                                                                                 }))}
-                                                                                className="text-gray-400 hover:text-gray-600 p-1"
+                                                                                className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
                                                                             >
                                                                                 <MoreHorizontal className="w-3 h-3"/>
                                                                             </button>
@@ -897,7 +897,7 @@ export default function DashboardPage() {
                                                                                     className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                                                                                     <button
                                                                                         onClick={() => startEditingComment(comment.id, comment.content)}
-                                                                                        className="flex items-center w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                                                                                        className="flex items-center w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer"
                                                                                     >
                                                                                         <Edit3
                                                                                             className="w-3 h-3 mr-2"/>
@@ -905,7 +905,7 @@ export default function DashboardPage() {
                                                                                     </button>
                                                                                     <button
                                                                                         onClick={() => deleteComment(post.id, comment.id)}
-                                                                                        className="flex items-center w-full px-3 py-2 text-xs text-red-600 hover:bg-gray-100"
+                                                                                        className="flex items-center w-full px-3 py-2 text-xs text-red-600 hover:bg-gray-100 cursor-pointer"
                                                                                     >
                                                                                         <Trash2
                                                                                             className="w-3 h-3 mr-2"/>
@@ -969,7 +969,7 @@ export default function DashboardPage() {
                                                 {/* Rendre le nom cliquable */}
                                                 <button
                                                     onClick={() => router.push(`/profile/${user.id}`)}
-                                                    className="font-medium hover:underline hover:text-blue-600 text-left"
+                                                    className="font-medium hover:underline hover:text-blue-600 text-left cursor-pointer"
                                                 >
                                                     {user.name}
                                                 </button>
@@ -979,14 +979,14 @@ export default function DashboardPage() {
                                         {sentRequests[user.id] ? (
                                             <button
                                                 onClick={() => cancelRequest(user.id)}
-                                                className="text-sm font-medium px-3 py-1 rounded-md text-red-600 hover:underline"
+                                                className="text-sm font-medium px-3 py-1 rounded-md text-red-600 hover:underline cursor-pointer"
                                             >
                                                 Annuler
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => followUser(user.id)}
-                                                className="text-sm font-medium px-3 py-1 rounded-md text-blue-600 hover:underline"
+                                                className="text-sm font-medium px-3 py-1 rounded-md text-blue-600 hover:underline cursor-pointer"
                                             >
                                                 Suivre
                                             </button>

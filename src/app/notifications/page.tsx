@@ -185,7 +185,7 @@ export default function NotificationsPage() {
                             <button
                                 onClick={fetchNotifications}
                                 disabled={loading}
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center disabled:opacity-50"
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center disabled:opacity-50 cursor-pointer"
                             >
                                 <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
                                 Actualiser
@@ -194,7 +194,7 @@ export default function NotificationsPage() {
                                 <button
                                     onClick={deleteReadNotifications}
                                     disabled={loading}
-                                    className="text-sm text-red-600 hover:text-red-800 hover:underline flex items-center disabled:opacity-50"
+                                    className="text-sm text-red-600 hover:text-red-800 hover:underline flex items-center disabled:opacity-50 cursor-pointer"
                                     title="Supprimer les notifications lues"
                                 >
                                     <Trash2 className="h-4 w-4 mr-1" />
@@ -263,7 +263,7 @@ export default function NotificationsPage() {
                                                         handleAction(notification.id, "ACCEPT");
                                                     }}
                                                     disabled={updating === notification.id}
-                                                    className="p-1.5 rounded-full bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 transition-colors"
+                                                    className="p-1.5 rounded-full bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 transition-colors cursor-pointer"
                                                     title="Accepter"
                                                 >
                                                     <Check className="h-5 w-5" />
@@ -274,7 +274,7 @@ export default function NotificationsPage() {
                                                         handleAction(notification.id, "REJECT");
                                                     }}
                                                     disabled={updating === notification.id}
-                                                    className="p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                                                    className="p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors cursor-pointer"
                                                     title="Refuser"
                                                 >
                                                     <X className="h-5 w-5" />
@@ -298,7 +298,7 @@ export default function NotificationsPage() {
                                         deleteNotification(notification.id);
                                     }}
                                     disabled={deleting === notification.id}
-                                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1 transition-opacity duration-200 disabled:opacity-50"
+                                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 p-1 transition-opacity duration-200 disabled:opacity-50 cursor-pointer"
                                     title="Supprimer cette notification"
                                 >
                                     {deleting === notification.id ? (

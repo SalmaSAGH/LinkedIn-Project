@@ -179,7 +179,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                         <p className="mt-2 text-gray-600">Le post que vous cherchez n existe pas ou a été supprimé.</p>
                         <button
                             onClick={() => router.push("/dashboard")}
-                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                         >
                             Retour à l accueil
                         </button>
@@ -222,7 +222,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                     {post.canEdit && (
                                         <div className="relative">
                                             <button
-                                                className="text-gray-400 hover:text-gray-600"
+                                                className="text-gray-400 hover:text-gray-600 cursor-pointer"
                                                 onClick={() => setShowPostMenu(!showPostMenu)}
                                             >
                                                 <MoreHorizontal size={20} />
@@ -234,7 +234,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                                             setEditingPost(true);
                                                             setShowPostMenu(false);
                                                         }}
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                                     >
                                                         <Edit3 className="w-4 h-4 mr-2" />
                                                         Modifier
@@ -250,7 +250,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                                                 router.push("/");
                                                             }
                                                         }}
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer"
                                                     >
                                                         <Trash2 className="w-4 h-4 mr-2" />
                                                         Supprimer
@@ -271,7 +271,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                         <div className="flex justify-end space-x-2 mt-2">
                                             <button
                                                 onClick={() => setEditingPost(false)}
-                                                className="px-3 py-1 text-gray-600 hover:text-gray-800"
+                                                className="px-3 py-1 text-gray-600 hover:text-gray-800 cursor-pointer"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -288,7 +288,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                                         setEditingPost(false);
                                                     }
                                                 }}
-                                                className="px-3 py-1 text-green-600 hover:text-green-800"
+                                                className="px-3 py-1 text-green-600 hover:text-green-800 cursor-pointer"
                                             >
                                                 <Check className="w-4 h-4" />
                                             </button>
@@ -320,8 +320,8 @@ export default function PostPageClient({ postId }: PostPageProps) {
                             <button
                                 onClick={handleLikePost}
                                 className={`flex items-center px-3 py-1 rounded transition ${post.isLikedByCurrentUser
-                                    ? "text-blue-600 bg-blue-50"
-                                    : "text-gray-500 hover:text-blue-600"
+                                    ? "text-blue-600 bg-blue-50 cursor-pointer"
+                                    : "text-gray-500 hover:text-blue-600 cursor-pointer" 
                                 }`}
                             >
                                 <ThumbsUp
@@ -329,11 +329,11 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                 />
                                 {post.likesCount} {post.likesCount <= 1 ? "Like" : "Likes"}
                             </button>
-                            <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded">
+                            <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded cursor-pointer">
                                 <MessageSquare className="h-5 w-5 mr-1" />
                                 {post.commentsCount} Commentaire{post.commentsCount !== 1 ? "s" : ""}
                             </button>
-                            <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded">
+                            <button className="flex items-center text-gray-500 hover:text-blue-600 px-3 py-1 rounded cursor-pointer">
                                 <Share2 className="h-5 w-5 mr-1" />
                                 Partager
                             </button>
@@ -359,7 +359,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                 <button
                                     type="submit"
                                     disabled={!newComment.trim() || submittingComment}
-                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                    className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center cursor-pointer"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>

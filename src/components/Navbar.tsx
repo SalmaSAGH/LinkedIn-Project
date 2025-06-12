@@ -100,7 +100,7 @@ export default function Navbar() {
 
                         <button
                             onClick={() => signOut({callbackUrl: "/signin"})}
-                            className="flex items-center gap-2 text-sm font-medium bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-full border border-red-200 transition-all duration-200"
+                            className="flex items-center gap-2 text-sm font-medium bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-full border border-red-200 transition-all duration-200 cursor-pointer"
                         >
                             <LogOut size={16}/>
                             Déconnexion

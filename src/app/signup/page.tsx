@@ -75,7 +75,7 @@ export default function SignupPage() {
                     />
                     <button
                         type="submit"
-                        className="w-full bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition"
+                        className="w-full bg-blue-700 text-white py-2 rounded-lg hover:bg-blue-800 transition cursor-pointer"
                     >
                         Inscrivez-vous
                     </button>

@@ -15,13 +15,13 @@ export default function Home() {
         <div className="flex space-x-4">
           <button
               onClick={() => router.push('/signin')}
-              className="bg-white text-blue-700 font-semibold px-6 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+              className="bg-white text-blue-700 font-semibold px-6 py-2 rounded-lg shadow hover:bg-gray-100 transition cursor-pointer"
           >
             Connexion
           </button>
           <button
               onClick={() => router.push('/signup')}
-              className="bg-white text-blue-700 font-semibold px-6 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+              className="bg-white text-blue-700 font-semibold px-6 py-2 rounded-lg shadow hover:bg-gray-100 transition cursor-pointer"
           >
             Inscription
           </button>

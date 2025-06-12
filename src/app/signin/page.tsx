@@ -78,7 +78,7 @@ export default function SignIn() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-md transition"
+                        className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 rounded-md transition cursor-pointer"
                     >
                         Se connecter
                     </button>

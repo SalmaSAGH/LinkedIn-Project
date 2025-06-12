@@ -113,7 +113,7 @@ export default function UserProfilePage() {
                     <p>{error}</p>
                     <button
                         onClick={() => router.push("/dashboard")}
-                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                     >
                         Retour à Accueil
                     </button>
@@ -211,7 +211,7 @@ export default function UserProfilePage() {
                                         <button
                                             onClick={() => handleFriendshipAction("remove")}
                                             disabled={isProcessing}
-                                            className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                                            className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 cursor-pointer"
                                         >
                                             <UserMinus className="h-5 w-5 mr-2" />
                                             {isProcessing ? "En cours..." : "Se désabonner"}
@@ -220,7 +220,7 @@ export default function UserProfilePage() {
                                         <button
                                             onClick={() => handleFriendshipAction("remove")}
                                             disabled={isProcessing}
-                                            className="flex items-center px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                            className="flex items-center px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
                                         >
                                             <UserCheck className="h-5 w-5 mr-2" />
                                             {isProcessing ? "En cours..." : "Annuler"}
@@ -229,7 +229,7 @@ export default function UserProfilePage() {
                                         <button
                                             onClick={() => handleFriendshipAction("add")}
                                             disabled={isProcessing}
-                                            className="flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                                            className="flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 cursor-pointer"
                                         >
                                             {isProcessing ? (
                                                 <>
