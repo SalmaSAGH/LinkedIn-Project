@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Check, X, UserPlus, UserCheck, UserX, Trash2, RefreshCw } from "lucide-react";
+import { Bell, Check, X, UserPlus, UserCheck, UserX, Trash2, RefreshCw, ThumbsUp, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -19,6 +19,9 @@ type Notification = {
         friendshipId?: string;
         senderId?: string;
         status?: string;
+        postId?: string;
+        commentId?: string;
+        type?: string;
     };
 };
 
@@ -41,6 +44,10 @@ export default function NotificationsPage() {
                 return status === "ACCEPTED"
                     ? <UserCheck className="h-5 w-5 text-green-500" />
                     : <UserX className="h-5 w-5 text-red-500" />;
+            case "POST_LIKE":
+                return <ThumbsUp className="h-5 w-5 text-blue-500" />;
+            case "POST_COMMENT":
+                return <MessageSquare className="h-5 w-5 text-blue-500" />;
             default:
                 return <Bell className="h-5 w-5 text-gray-500" />;
         }
@@ -108,6 +115,20 @@ export default function NotificationsPage() {
             );
         } catch (error) {
             console.error("Failed to mark as read:", error);
+        }
+    };
+
+    const handleNotificationClick = async (notification: Notification) => {
+        // Marquer comme lu si ce n'est pas déjà fait
+        if (!notification.read) {
+            await markAsRead(notification.id);
+        }
+
+        // Rediriger en fonction du type de notification
+        if (notification.metadata?.postId) {
+            router.push(`/posts/${notification.metadata.postId}`);
+        } else if (notification.metadata?.senderId) {
+            router.push(`/profile/${notification.metadata.senderId}`);
         }
     };
 
@@ -217,7 +238,7 @@ export default function NotificationsPage() {
                             >
                                 <div
                                     className="flex items-start space-x-3 flex-1 cursor-pointer"
-                                    onClick={() => !notification.read && markAsRead(notification.id)}
+                                    onClick={() => handleNotificationClick(notification)}
                                 >
                                     <div className="flex-shrink-0 pt-1">
                                         {getNotificationIcon(notification.type, notification.metadata?.status)}

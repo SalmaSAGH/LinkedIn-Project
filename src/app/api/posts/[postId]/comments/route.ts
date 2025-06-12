@@ -3,57 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-// Type pour les params avec Promise
-type ParamsType = Promise<{ postId: string }>;
-
-export async function GET(
-    req: NextRequest,
-    { params }: { params: ParamsType }
-) {
-    try {
-        const { postId } = await params; // Ajout de await ici
-        const session = await getServerSession(authOptions);
-
-        let currentUser = null;
-        if (session?.user?.email) {
-            currentUser = await prisma.user.findUnique({
-                where: { email: session.user.email },
-                select: { id: true }
-            });
-        }
-
-        const comments = await prisma.comment.findMany({
-            where: { postId },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                    },
-                },
-            },
-            orderBy: { createdAt: "desc" },
-        });
-
-        const commentsWithEditPermission = comments.map(comment => ({
-            ...comment,
-            canEdit: currentUser?.id === comment.userId,
-        }));
-
-        return NextResponse.json(commentsWithEditPermission);
-    } catch (error) {
-        console.error("Erreur lors de la récupération des commentaires:", error);
-        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-    }
-}
-
 export async function POST(
     req: NextRequest,
-    { params }: { params: ParamsType }
+    { params }: { params: { postId: string } }
 ) {
     try {
-        const { postId } = await params; // Ajout de await ici
+        const { postId } = params;
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
@@ -68,6 +23,7 @@ export async function POST(
 
         const post = await prisma.post.findUnique({
             where: { id: postId },
+            include: { user: true }
         });
 
         if (!post) {
@@ -99,19 +55,22 @@ export async function POST(
             },
         });
 
-        // Après avoir créé le commentaire, ajoutez:
-        await prisma.notification.create({
-            data: {
-                userId: post.userId, // Le propriétaire du post
-                type: "POST_COMMENT",
-                content: `${user.name || "Quelqu'un"} a commenté votre publication: "${content.substring(0, 30)}..."`,
-                metadata: {
-                    postId: post.id,
-                    senderId: user.id,
-                    commentId: comment.id
+        // Créer une notification seulement si l'utilisateur qui commente n'est pas le propriétaire du post
+        if (user.id !== post.userId) {
+            await prisma.notification.create({
+                data: {
+                    userId: post.userId,
+                    type: "POST_COMMENT",
+                    content: `${user.name || "Quelqu'un"} a commenté votre publication: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`,
+                    metadata: {
+                        postId: post.id,
+                        senderId: user.id,
+                        commentId: comment.id,
+                        type: "post"
+                    }
                 }
-            }
-        });
+            });
+        }
 
         return NextResponse.json({
             ...comment,
@@ -119,116 +78,6 @@ export async function POST(
         });
     } catch (error) {
         console.error("Erreur lors de la création du commentaire:", error);
-        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-    }
-}
-
-export async function PUT(
-    req: NextRequest,
-    //{ params }: { params: ParamsType }
-) {
-    try {
-        //const { postId } = await params; // Ajout de await ici
-        const session = await getServerSession(authOptions);
-
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-        }
-
-        const { commentId, content } = await req.json();
-
-        if (!content?.trim()) {
-            return NextResponse.json({ error: "Le contenu du commentaire est requis" }, { status: 400 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
-        }
-
-        const existingComment = await prisma.comment.findUnique({
-            where: { id: commentId },
-        });
-
-        if (!existingComment) {
-            return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 });
-        }
-
-        if (existingComment.userId !== user.id) {
-            return NextResponse.json({ error: "Non autorisé à modifier ce commentaire" }, { status: 403 });
-        }
-
-        const updatedComment = await prisma.comment.update({
-            where: { id: commentId },
-            data: {
-                content: content.trim(),
-                updatedAt: new Date(),
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                    },
-                },
-            },
-        });
-
-        return NextResponse.json({
-            ...updatedComment,
-            canEdit: true,
-        });
-    } catch (error) {
-        console.error("Erreur lors de la modification du commentaire:", error);
-        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-    }
-}
-
-export async function DELETE(
-    req: NextRequest,
-    //{ params }: { params: ParamsType }
-) {
-    try {
-        //const { postId } = await params; // Ajout de await ici
-        const session = await getServerSession(authOptions);
-
-        if (!session?.user?.email) {
-            return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-        }
-
-        const { commentId } = await req.json();
-
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
-        }
-
-        const existingComment = await prisma.comment.findUnique({
-            where: { id: commentId },
-        });
-
-        if (!existingComment) {
-            return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 });
-        }
-
-        if (existingComment.userId !== user.id) {
-            return NextResponse.json({ error: "Non autorisé à supprimer ce commentaire" }, { status: 403 });
-        }
-
-        await prisma.comment.delete({
-            where: { id: commentId },
-        });
-
-        return NextResponse.json({ message: "Commentaire supprimé avec succès" });
-    } catch (error) {
-        console.error("Erreur lors de la suppression du commentaire:", error);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 }

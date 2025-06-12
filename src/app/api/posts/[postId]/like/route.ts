@@ -1,27 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import prisma from "@/lib/prisma";
-import {authOptions} from "@/lib/auth";
-import {getServerSession} from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: Promise<{ postId: string }> } // Notez le Promise ici
+    { params }: { params: { postId: string } }
 ) {
     try {
-        const awaitedParams = await params; // Attendre les params
-        const { postId } = awaitedParams;
+        const { postId } = params;
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-
-
         // Vérifier si le post existe
         const post = await prisma.post.findUnique({
             where: { id: postId },
+            include: { user: true }
         });
 
         if (!post) {
@@ -65,17 +62,18 @@ export async function POST(
                     postId: postId,
                 },
             });
-            // Après avoir créé le like, ajoutez:
-            if (!existingLike) {
-                // Créer la notification pour le propriétaire du post
+
+            // Créer une notification seulement si l'utilisateur qui like n'est pas le propriétaire du post
+            if (user.id !== post.userId) {
                 await prisma.notification.create({
                     data: {
-                        userId: post.userId, // Le propriétaire du post
+                        userId: post.userId,
                         type: "POST_LIKE",
                         content: `${user.name || "Quelqu'un"} a aimé votre publication`,
                         metadata: {
                             postId: post.id,
-                            senderId: user.id
+                            senderId: user.id,
+                            type: "post"
                         }
                     }
                 });

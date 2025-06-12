@@ -22,7 +22,7 @@ export async function GET() {
         const notifications = await prisma.notification.findMany({
             where: { userId: user.id },
             orderBy: { createdAt: "desc" },
-            take: 10
+            take: 20
         });
 
         return NextResponse.json(notifications);
@@ -39,7 +39,7 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
-        const { notificationId, action } = await req.json();
+        const { notificationId } = await req.json();
 
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
@@ -50,14 +50,10 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
         }
 
-        if (action) {
-            // Gérer l'acceptation/rejet d'une demande d'amitié
-        } else {
-            await prisma.notification.update({
-                where: { id: notificationId, userId: user.id },
-                data: { read: true }
-            });
-        }
+        await prisma.notification.update({
+            where: { id: notificationId, userId: user.id },
+            data: { read: true }
+        });
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -66,7 +62,6 @@ export async function PUT(req: Request) {
     }
 }
 
-// Nouvelle méthode DELETE pour supprimer les notifications
 export async function DELETE(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -85,7 +80,6 @@ export async function DELETE(req: Request) {
 
         const { notificationIds } = await req.json();
 
-        // Supprimer les notifications spécifiées
         await prisma.notification.deleteMany({
             where: {
                 id: { in: notificationIds },
