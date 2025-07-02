@@ -23,6 +23,8 @@
     "next-auth": "^4.24.11",
     "next-cloudinary": "^6.16.0",
     "prisma": "^6.9.0",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

@@ -27,6 +27,19 @@ button[disabled] {
   opacity: 0.7;
 }
 
+/* Messages page */
+.message-container {
+  height: calc(100vh - 4rem);
+}
+
+.message-list {
+  height: calc(100% - 9rem);
+}
+
+.conversation-list {
+  height: calc(100% - 4rem);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

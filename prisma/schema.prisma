@@ -40,6 +40,13 @@ model User {
 
   // Relation pour les notifications
   notifications Notification[]
+
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  Conversation1 Conversation[] @relation("User1Conversations")
+
+  Conversation2 Conversation[] @relation("User2Conversations")
 }
 
 model Experience {
@@ -127,4 +134,29 @@ model Notification {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  senderId       String
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId     String
+  createdAt      DateTime     @default(now())
+  read           Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  user1     User      @relation("User1Conversations", fields: [user1Id], references: [id])
+  user1Id   String
+  user2     User      @relation("User2Conversations", fields: [user2Id], references: [id])
+  user2Id   String
+  messages  Message[]
+  updatedAt DateTime  @updatedAt
+
+  @@unique([user1Id, user2Id])
 }
