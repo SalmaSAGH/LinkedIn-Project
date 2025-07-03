@@ -3,20 +3,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-export async function POST(
-    req: NextRequest,
-    { params }: { params: { postId: string } }
-) {
+export async function POST(req: NextRequest) {
     try {
-        const { postId } = params;
-        const session = await getServerSession(authOptions);
+        const postIdMatch = req.nextUrl.pathname.match(/\/posts\/([^/]+)\/comments/);
+        const postId = postIdMatch?.[1];
 
+        if (!postId) {
+            return NextResponse.json({ error: "ID du post manquant" }, { status: 400 });
+        }
+
+        const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
         }
 
         const { content } = await req.json();
-
         if (!content?.trim()) {
             return NextResponse.json({ error: "Le contenu du commentaire est requis" }, { status: 400 });
         }
@@ -55,7 +56,6 @@ export async function POST(
             },
         });
 
-        // Créer une notification seulement si l'utilisateur qui commente n'est pas le propriétaire du post
         if (user.id !== post.userId) {
             await prisma.notification.create({
                 data: {
