@@ -28,9 +28,8 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 - ✅ **Commentaires** sur les publications avec possibilité de modifier et supprimer 
 - ✅ Suggestions de connexions(**avec notifications**), abonnement et désabonnement entre utilisateurs
 - ✅ Notifications en temps réel (like, comment)  
-- 🔜 Messagerie
-- 🔜 Export du profil en **PDF**
-
+- ✅ Messagerie en temps réel 
+- ✅ Statistiques réels de connections et posts par utilisateur
 ---
 ## ⚙️ Installation locale
 
