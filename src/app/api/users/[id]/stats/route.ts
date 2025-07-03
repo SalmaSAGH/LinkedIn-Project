@@ -1,9 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest) {
     try {
-        const userId = params.id;
+        // Extraction de l'id depuis l'URL
+        const idMatch = request.nextUrl.pathname.match(/\/users\/([^/]+)\/stats/);
+        const userId = idMatch?.[1];
+
+        if (!userId) {
+            return NextResponse.json({ error: "ID utilisateur manquant" }, { status: 400 });
+        }
 
         // Compter les posts de l'utilisateur
         const postCount = await prisma.post.count({
@@ -20,10 +26,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             }
         });
 
-        return NextResponse.json({
-            postCount,
-            connectionsCount
-        });
+        return NextResponse.json({ postCount, connectionsCount });
 
     } catch (error) {
         console.error("Erreur lors de la récupération des statistiques:", error);
