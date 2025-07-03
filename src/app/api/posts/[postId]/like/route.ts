@@ -3,12 +3,16 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 
-export async function POST(
-    req: NextRequest,
-    { params }: { params: { postId: string } }
-) {
+export async function POST(req: NextRequest) {
     try {
-        const { postId } = params;
+        // Extraire postId de l’URL via RegEx
+        const postIdMatch = req.nextUrl.pathname.match(/\/posts\/([^/]+)\/like/);
+        const postId = postIdMatch?.[1];
+
+        if (!postId) {
+            return NextResponse.json({ error: "ID du post manquant" }, { status: 400 });
+        }
+
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.email) {
@@ -63,7 +67,7 @@ export async function POST(
                 },
             });
 
-            // Créer une notification seulement si l'utilisateur qui like n'est pas le propriétaire du post
+            // Créer une notification si ce n'est pas l'auteur du post
             if (user.id !== post.userId) {
                 await prisma.notification.create({
                     data: {
