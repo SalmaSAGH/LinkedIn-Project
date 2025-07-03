@@ -1,9 +1,17 @@
 // hooks/useMessageNotifications.ts
 import { useState, useEffect, useCallback } from 'react';
 
+type Message = {
+    id: string;
+    content: string;
+    createdAt: string;
+    senderId: string;
+    read: boolean;
+};
+
 export function useMessageNotifications() {
     const [unreadCount, setUnreadCount] = useState(0);
-    const [newMessages, setNewMessages] = useState<any[]>([]);
+    const [newMessages, setNewMessages] = useState<Message[]>([]);
 
     const fetchUnreadCount = useCallback(async () => {
         try {
@@ -31,7 +39,7 @@ export function useMessageNotifications() {
         setNewMessages([]);
     }, []);
 
-    const addNewMessage = useCallback((message: any) => {
+    const addNewMessage = useCallback((message: Message) => {
         setNewMessages(prev => [...prev, message]);
         setUnreadCount(prev => prev + 1);
     }, []);

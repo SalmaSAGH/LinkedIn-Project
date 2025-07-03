@@ -10,6 +10,34 @@ interface SearchPageProps {
     };
 }
 
+type User = {
+    id: string;
+    name: string;
+    image: string | null;
+    bio?: string | null;
+    skills: string[] | null;
+
+};
+
+type Post = {
+    id: string;
+    title: string;
+    body: string;
+    createdAt: string;
+    updatedAt?: string;
+    imageUrl?: string;
+    canEdit?: boolean;
+    user: {
+        id?: string;
+        name?: string | null;
+        image?: string | null;
+    };
+    likesCount: number;
+    commentsCount: number;
+    isLikedByCurrentUser: boolean;
+    comments: Comment[];
+};
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const { q: query, type } = searchParams;
 
@@ -27,6 +55,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     }
 
     const { users = [], posts = [] } = await res.json();
+
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
@@ -60,7 +89,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     <h2 className="text-xl font-semibold mb-4">Personnes</h2>
                     {users.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {users.map((user: any) => (
+                            {users.map((user: User) => (
                                 <Link
                                     key={user.id}
                                     href={`/profile/${user.id}`}
@@ -74,15 +103,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                     <div>
                                         <h3 className="font-medium">{user.name}</h3>
                                         {user.bio && <p className="text-sm text-gray-600">{user.bio}</p>}
-                                        {user.skills?.length > 0 && (
+                                        {Array.isArray(user.skills) && user.skills.length > 0 && (
                                             <div className="mt-2 flex flex-wrap gap-1">
                                                 {user.skills.slice(0, 3).map((skill: string, i: number) => (
                                                     <span
                                                         key={i}
                                                         className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
                                                     >
-                            {skill}
-                          </span>
+        {skill}
+      </span>
                                                 ))}
                                             </div>
                                         )}
@@ -104,7 +133,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     <h2 className="text-xl font-semibold mb-4">Publications</h2>
                     {posts.length > 0 ? (
                         <div className="space-y-4">
-                            {posts.map((post: any) => (
+                            {posts.map((post: Post) => (
                                 <Link
                                     key={post.id}
                                     href={`/posts/${post.id}`}
@@ -113,7 +142,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                                     <div className="flex items-center mb-3">
                                         <img
                                             src={post.user.image || "/default-avatar.png"}
-                                            alt={post.user.name}
+                                            alt={post.user.name ?? "Utilisateur"}
                                             className="w-8 h-8 rounded-full mr-2"
                                         />
                                         <span className="font-medium">{post.user.name}</span>
