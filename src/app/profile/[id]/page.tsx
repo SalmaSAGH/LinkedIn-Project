@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { User, Mail, Briefcase, BookOpen, UserMinus, UserCheck, UserPlus } from "lucide-react";
+import Image from "next/image";
 
 type UserProfile = {
     id: string;
@@ -161,7 +162,7 @@ export default function UserProfilePage() {
                         <div className="px-8 pb-6 relative">
                             <div className="absolute -top-12 left-8">
                                 {profile.image ? (
-                                    <img
+                                    <Image
                                         src={profile.image}
                                         alt="Profil"
                                         className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
