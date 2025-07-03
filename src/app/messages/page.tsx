@@ -37,6 +37,8 @@ export default function MessagesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
     // Détecter si c'est mobile

@@ -108,6 +108,7 @@ export default function DashboardPage() {
     const [sentRequests, setSentRequests] = useState<Record<string, boolean>>({});
     const [, setFriendshipStatus] = useState<Record<string, 'none' | 'pending' | 'accepted'>>({});
     const [connectedUser, setConnectedUser] = useState<ConnectedUser | null>(null);
+    const [userStats, setUserStats] = useState<{ postCount: number; connectionsCount: number } | null>(null);
 
 
 
@@ -118,6 +119,23 @@ export default function DashboardPage() {
     const [editCommentContent, setEditCommentContent] = useState("");
     const [showPostMenu, setShowPostMenu] = useState<Record<string, boolean>>({});
     const [showCommentMenu, setShowCommentMenu] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        async function fetchUserStats() {
+            if (connectedUser?.id) {
+                try {
+                    const res = await fetch(`/api/users/${connectedUser.id}/stats`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setUserStats(data);
+                    }
+                } catch (error) {
+                    console.error("Erreur lors de la récupération des statistiques:", error);
+                }
+            }
+        }
+        fetchUserStats();
+    }, [connectedUser?.id]);
 
 
     useEffect(() => {
@@ -546,7 +564,8 @@ export default function DashboardPage() {
             <main className="mt-4 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 px-6">
 
                 {/* Colonne gauche : profil utilisateur (1 col) */}
-                <aside className="lg:col-span-1 space-y-6">
+                <aside className="lg:col-span-1 space-y-4"> {/* Changé space-y-6 à space-y-4 */}
+                    {/* Bloc Profil */}
                     {connectedUser && (
                         <div className="bg-white rounded-lg shadow p-6 text-center">
                             {connectedUser.image ? (
@@ -556,8 +575,7 @@ export default function DashboardPage() {
                                     className="w-20 h-20 rounded-full mx-auto mb-2 object-cover"
                                 />
                             ) : (
-                                <div
-                                    className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">
+                                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-2">
                                     <User className="h-10 w-10 text-gray-500"/>
                                 </div>
                             )}
@@ -571,6 +589,53 @@ export default function DashboardPage() {
                             </button>
                         </div>
                     )}
+
+                    {/* Nouveau bloc Statistiques */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Vos statistiques</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                    <div className="p-2 rounded-full bg-blue-100 mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Publications</p>
+                                        <p className="font-bold text-gray-900">
+                                            {userStats?.postCount ?? "..."}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                    <div className="p-2 rounded-full bg-green-100 mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Connexions</p>
+                                        <p className="font-bold text-gray-900">
+                                            {userStats?.connectionsCount ?? "..."}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100">
+                                <button
+                                    onClick={() => router.push('/analytics')}
+                                    className="w-full text-center text-sm text-blue-600 hover:underline"
+                                >
+                                    Voir toutes les statistiques
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </aside>
 
                 <section className="lg:col-span-2 space-y-6">

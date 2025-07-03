@@ -25,6 +25,22 @@ export default function ProfilePage() {
     const [bio, setBio] = useState("");
     const [skills, setSkills] = useState<string>("");
     const [image, setImage] = useState("");
+    const [stats, setStats] = useState<{ postCount: number; connectionsCount: number } | null>(null);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/profile/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération des statistiques:", error);
+            }
+        }
+        fetchStats();
+    }, []);
 
 
     useEffect(() => {
@@ -138,18 +154,18 @@ export default function ProfilePage() {
                                 <div className="w-32 pr-4 flex flex-col items-end border-r border-gray-200">
                                     <div className="text-right space-y-6">
                                         <div className="flex flex-col items-end">
-                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Connections</span>
-                                            <span className="text-lg font-bold text-blue-600">245</span>
+                                            <span
+                                                className="text-xs font-medium text-gray-500 uppercase tracking-wider">Connections</span>
+                                            <span className="text-lg font-bold text-blue-600">
+                {stats?.connectionsCount ?? "..."}
+            </span>
                                         </div>
-
                                         <div className="flex flex-col items-end">
-                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Vues</span>
-                                            <span className="text-lg font-bold text-blue-600">1.2k</span>
-                                        </div>
-
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</span>
-                                            <span className="text-lg font-bold text-blue-600">18</span>
+                                            <span
+                                                className="text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</span>
+                                            <span className="text-lg font-bold text-blue-600">
+                {stats?.postCount ?? "..."}
+            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -160,23 +176,28 @@ export default function ProfilePage() {
                                         <h1 className="text-3xl font-bold text-gray-900">
                                             {name || "Nom non défini"}
                                             <span className="ml-2 text-blue-600">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </span>
                                         </h1>
                                     </div>
 
                                     <div className="mt-2 flex items-center text-gray-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none"
+                                             viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                         </svg>
                                         <span className="font-medium">{profile?.email}</span>
                                     </div>
 
                                     <div className="mt-4 group">
                                         <div className="relative">
-                                            <div className="absolute -left-4 top-0 h-full w-1 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <div
+                                                className="absolute -left-4 top-0 h-full w-1 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             <p className={`text-gray-700 pl-2 border-l-2 border-transparent group-hover:border-blue-200 transition-all ${!bio && "italic text-gray-400"}`}>
                                                 {bio || "Ajoutez une bio pour décrire votre parcours et vos compétences..."}
                                             </p>

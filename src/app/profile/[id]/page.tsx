@@ -26,12 +26,29 @@ export default function UserProfilePage() {
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [requestSent, setRequestSent] = useState(false);
+    const [stats, setStats] = useState<{ postCount: number; connectionsCount: number } | null>(null);
 
 
     useEffect(() => {
         fetchProfile();
         checkIfRequestSent();
     }, [userId]);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const res = await fetch(`/api/users/${userId}/stats`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération des statistiques:", error);
+            }
+        }
+        if (userId) fetchStats();
+    }, [userId]);
+
 
     const checkIfRequestSent = async () => {
         try {
@@ -161,12 +178,18 @@ export default function UserProfilePage() {
                                     <div className="w-32 pr-4 flex flex-col items-end border-r border-gray-200">
                                         <div className="text-right space-y-6">
                                             <div className="flex flex-col items-end">
-                                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Connections</span>
-                                                <span className="text-lg font-bold text-blue-600">245</span>
+                                                <span
+                                                    className="text-xs font-medium text-gray-500 uppercase tracking-wider">Connections</span>
+                                                <span className="text-lg font-bold text-blue-600">
+                {stats?.connectionsCount ?? "..."}
+            </span>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Vues</span>
-                                                <span className="text-lg font-bold text-blue-600">1.2k</span>
+                                                <span
+                                                    className="text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</span>
+                                                <span className="text-lg font-bold text-blue-600">
+                {stats?.postCount ?? "..."}
+            </span>
                                             </div>
                                         </div>
                                     </div>
@@ -177,7 +200,7 @@ export default function UserProfilePage() {
                                         </h1>
 
                                         <div className="mt-2 flex items-center text-gray-600">
-                                            <Mail className="h-5 w-5 mr-2" />
+                                            <Mail className="h-5 w-5 mr-2"/>
                                             <span className="font-medium">{profile.email}</span>
                                         </div>
 
@@ -213,7 +236,7 @@ export default function UserProfilePage() {
                                             disabled={isProcessing}
                                             className="flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 cursor-pointer"
                                         >
-                                            <UserMinus className="h-5 w-5 mr-2" />
+                                            <UserMinus className="h-5 w-5 mr-2"/>
                                             {isProcessing ? "En cours..." : "Se désabonner"}
                                         </button>
                                     ) : requestSent ? (
