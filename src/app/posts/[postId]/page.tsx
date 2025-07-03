@@ -1,9 +1,5 @@
 import PostPageClient from "./PostPageClient";
 
-type PageProps = {
-    params: { postId: string };
-};
-
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: { params: { postId: string } }) {
     return <PostPageClient postId={params.postId} />;
 }
