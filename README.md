@@ -29,7 +29,7 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 - ✅ Suggestions de connexions(**avec notifications**), abonnement et désabonnement entre utilisateurs
 - ✅ Notifications en temps réel (like, comment)  
 - ✅ Messagerie en temps réel 
-
+- ✅ Statistiques réels de connections et posts par utilisateur
 ---
 ## ⚙️ Installation locale
 
