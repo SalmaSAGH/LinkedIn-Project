@@ -198,7 +198,7 @@ export default function PostPageClient({ postId }: PostPageProps) {
                     <div className="p-6">
                         <div className="flex items-start space-x-4">
                             {post.user?.image ? (
-                                <img
+                                <Image
                                     src={post.user.image}
                                     alt={post.user.name || "Utilisateur"}
                                     className="w-12 h-12 rounded-full object-cover"
