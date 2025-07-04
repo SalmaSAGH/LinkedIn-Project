@@ -1,14 +1,14 @@
-// app/api/posts/[postId]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-// 👇 Ajout de params
-export async function GET(req: NextRequest, { params }: { params: { postId: string } }) {
+export async function GET(req: NextRequest) {
     try {
-        const postId = params.postId;
+        // Récupérer postId à partir de l'URL (path)
+        // Ex : /api/posts/123 => pathname = "/api/posts/123"
+        const pathParts = req.nextUrl.pathname.split("/");
+        const postId = pathParts[pathParts.length - 1]; // dernier segment de l'URL
 
         if (!postId) {
             return NextResponse.json({ error: "ID du post manquant" }, { status: 400 });
