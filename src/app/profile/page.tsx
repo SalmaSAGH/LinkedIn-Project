@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Image from "next/image";
 
 
 
@@ -123,9 +124,11 @@ export default function ProfilePage() {
                             <div className="absolute -top-12 left-8">
                                 <div className="relative group">
                                     {image ? (
-                                        <img
+                                        <Image
                                             src={image}
                                             alt="Profil"
+                                            width={40}
+                                            height={40}
                                             className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-lg"
                                         />
                                     ) : (

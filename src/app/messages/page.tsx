@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Send, ArrowLeft, MoreVertical, Smile, Paperclip } from 'lucide-react';
 import Navbar from "@/components/Navbar";
+import Image from "next/image";
 
 type User = {
     id: string;
@@ -275,9 +276,11 @@ export default function MessagesPage() {
                                         className="w-full flex items-center p-4 hover:bg-gray-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
                                     >
                                         <div className="relative">
-                                            <img
+                                            <Image
                                                 src={user.image || '/default-avatar.png'}
                                                 alt={user.name}
+                                                width={40}
+                                                height={40}
                                                 className="w-12 h-12 rounded-full object-cover"
                                             />
                                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
@@ -320,9 +323,11 @@ export default function MessagesPage() {
                                         }`}
                                     >
                                         <div className="relative">
-                                            <img
+                                            <Image
                                                 src={conversation.otherUser.image || '/default-avatar.png'}
                                                 alt={conversation.otherUser.name}
+                                                width={40}
+                                                height={40}
                                                 className="w-14 h-14 rounded-full object-cover"
                                             />
                                             {conversation.unreadCount > 0 && (
@@ -371,9 +376,11 @@ export default function MessagesPage() {
                                         </button>
                                     )}
                                     <div className="relative">
-                                        <img
+                                        <Image
                                             src={selectedConversation.otherUser.image || '/default-avatar.png'}
                                             alt={selectedConversation.otherUser.name}
+                                            width={40}
+                                            height={40}
                                             className="w-12 h-12 rounded-full object-cover"
                                         />
                                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>

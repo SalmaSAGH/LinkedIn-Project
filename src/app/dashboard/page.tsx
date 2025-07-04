@@ -569,9 +569,11 @@ export default function DashboardPage() {
                     {connectedUser && (
                         <div className="bg-white rounded-lg shadow p-6 text-center">
                             {connectedUser.image ? (
-                                <img
+                                <Image
                                     src={connectedUser.image}
                                     alt="Photo de profil"
+                                    width={40}
+                                    height={40}
                                     className="w-20 h-20 rounded-full mx-auto mb-2 object-cover"
                                 />
                             ) : (
@@ -658,9 +660,11 @@ export default function DashboardPage() {
                             {/* Aperçu de l'image */}
                             {imagePreview && (
                                 <div className="relative">
-                                    <img
+                                    <Image
                                         src={imagePreview}
                                         alt="Preview"
+                                        width={40}
+                                        height={40}
                                         className="rounded-lg max-h-80 object-contain"
                                     />
                                     <button
@@ -716,9 +720,11 @@ export default function DashboardPage() {
                                 <div className="p-6">
                                     <div className="flex items-start space-x-4">
                                         {post.user?.image ? (
-                                            <img
+                                            <Image
                                                 src={post.user.image}
                                                 alt={post.user.name || "Utilisateur"}
+                                                width={40}
+                                                height={40}
                                                 className="w-12 h-12 rounded-full object-cover"
                                             />
                                         ) : (
@@ -900,9 +906,11 @@ export default function DashboardPage() {
                                             {post.comments?.map((comment) => (
                                                 <div key={comment.id} className="flex items-start space-x-3">
                                                     {comment.user?.image ? (
-                                                        <img
+                                                        <Image
                                                             src={comment.user.image}
                                                             alt={comment.user.name || "Utilisateur"}
+                                                            width={40}
+                                                            height={40}
                                                             className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                                         />
                                                     ) : (
@@ -1025,9 +1033,11 @@ export default function DashboardPage() {
                                 {suggestions.map((user) => (
                                     <div key={user.id} className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <img
+                                            <Image
                                                 src={user.avatar}
                                                 alt={user.name}
+                                                width={40}
+                                                height={40}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />
                                             <div>

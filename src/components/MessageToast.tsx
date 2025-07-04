@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, MessageCircle } from 'lucide-react';
+import Image from "next/image";
 
 type ToastProps = {
     message: {
@@ -45,9 +46,11 @@ const MessageToast: React.FC<ToastProps> = ({ message, onClose, onNavigate }) =>
             <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full cursor-pointer hover:shadow-xl transition-shadow">
                 <div className="flex items-start space-x-3" onClick={handleClick}>
                     <div className="flex-shrink-0">
-                        <img
+                        <Image
                             src={message.sender.image || '/default-avatar.png'}
                             alt={message.sender.name}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full"
                         />
                     </div>

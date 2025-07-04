@@ -201,6 +201,8 @@ export default function PostPageClient({ postId }: PostPageProps) {
                                 <Image
                                     src={post.user.image}
                                     alt={post.user.name || "Utilisateur"}
+                                    width={40}
+                                    height={40}
                                     className="w-12 h-12 rounded-full object-cover"
                                 />
                             ) : (
@@ -370,9 +372,11 @@ export default function PostPageClient({ postId }: PostPageProps) {
                             {post.comments?.map((comment) => (
                                 <div key={comment.id} className="flex items-start space-x-3">
                                     {comment.user?.image ? (
-                                        <img
+                                        <Image
                                             src={comment.user.image}
                                             alt={comment.user.name || "Utilisateur"}
+                                            width={40}
+                                            height={40}
                                             className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                         />
                                     ) : (

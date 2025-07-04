@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { LogOut } from "lucide-react";
 import { debounce } from "lodash";
+import Image from "next/image";
 
 type UserSearchResult = {
     id: string;
@@ -196,9 +197,11 @@ export default function Navbar() {
                                                     className="flex items-center px-4 py-2 hover:bg-gray-100"
                                                     onClick={() => setShowResults(false)}
                                                 >
-                                                    <img
+                                                    <Image
                                                         src={user.image || "/default-avatar.png"}
                                                         alt={user.name}
+                                                        width={40}
+                                                        height={40}
                                                         className="w-8 h-8 rounded-full mr-3"
                                                     />
                                                     <div>
@@ -225,9 +228,11 @@ export default function Navbar() {
                                                     onClick={() => setShowResults(false)}
                                                 >
                                                     <div className="flex items-center mb-1">
-                                                        <img
+                                                        <Image
                                                             src={post.user.image || "/default-avatar.png"}
                                                             alt={post.user.name}
+                                                            width={40}
+                                                            height={40}
                                                             className="w-6 h-6 rounded-full mr-2"
                                                         />
                                                         <span className="text-sm font-medium">{post.user.name}</span>

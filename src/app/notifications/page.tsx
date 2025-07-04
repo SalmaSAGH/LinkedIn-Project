@@ -1,10 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { Bell, Check, X, UserPlus, UserCheck, UserX, Trash2, RefreshCw, ThumbsUp, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
