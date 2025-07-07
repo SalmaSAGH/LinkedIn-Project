@@ -74,3 +74,18 @@ export async function GET(request: NextRequest) {
         );
     }
 }
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+    try {
+        const userId = params.id;
+
+        // Supprimer l'utilisateur par id
+        await prisma.user.delete({
+            where: { id: userId },
+        });
+
+        return NextResponse.json({ message: 'Utilisateur supprimé avec succès' }, { status: 200 });
+    } catch (error) {
+        console.error('Erreur suppression utilisateur:', error);
+        return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    }
+}

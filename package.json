@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -31,7 +32,12 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@jest/globals": "^30.0.4",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -39,8 +45,18 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4",
+    "jest-mock-extended": "^4.0.0",
+    "mock-form-data": "^1.0.5",
     "postcss": "^8.5.4",
+    "supertest": "^7.1.1",
     "tailwindcss": "^4.1.8",
-    "typescript": "^5"
+    "ts-jest": "^29.4.0",
+    "tsconfig-paths-jest": "^0.0.1",
+    "typescript": "^5",
+    "util": "^0.12.5",
+    "whatwg-fetch": "^3.6.20"
   }
 }
