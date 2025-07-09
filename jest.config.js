@@ -1,9 +1,10 @@
 module.exports = {
     preset: 'ts-jest',
-    testEnvironment: 'node',
+    testEnvironment: 'jsdom',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
     },
+    setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
     testPathIgnorePatterns: [
         '/node_modules/',
         '/__mocks__/',

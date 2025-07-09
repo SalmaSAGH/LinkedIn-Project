@@ -1,41 +1,31 @@
 import { GET } from '@/app/api/users/[id]/route';
 import { getServerSession } from 'next-auth';
-import { NextRequest } from 'next/server';
-
-
 
 jest.mock('next-auth', () => ({
     getServerSession: jest.fn(),
 }));
 
-jest.mock('@/lib/prisma', () => {
-    const prismaMock = {
-        user: {
-            findUnique: jest.fn(),
-        },
-        friendship: {
-            findFirst: jest.fn(),
-        },
-    };
-    return {
-        __esModule: true,
-        default: prismaMock,
-    };
-});
+jest.mock('@/lib/prisma', () => ({
+    user: {
+        findUnique: jest.fn(),
+    },
+    friendship: {
+        findFirst: jest.fn(),
+    },
+}));
 
-const prismaMock = jest.requireMock('@/lib/prisma').default;
+import prisma from '@/lib/prisma';
+import {NextRequest} from "next/server";
 
 describe('GET /api/users/[id]', () => {
     it('renvoie les informations d’un utilisateur et isFriend', async () => {
         const userId = 'user-123';
 
-        // Mock de la session utilisateur connectée
         (getServerSession as jest.Mock).mockResolvedValue({
-            user: { id: 'user-456' }, // utilisateur connecté
+            user: { id: 'user-456' },
         });
 
-        // Mock de l'utilisateur recherché
-        prismaMock.user.findUnique.mockResolvedValue({
+        (prisma.user.findUnique as jest.Mock).mockResolvedValue({
             id: userId,
             name: 'Test User',
             email: 'test@example.com',
@@ -46,14 +36,12 @@ describe('GET /api/users/[id]', () => {
             educations: [],
         });
 
-        // Mock de la relation d’amitié
-        prismaMock.friendship.findFirst.mockResolvedValue({
+        (prisma.friendship.findFirst as jest.Mock).mockResolvedValue({
             id: 'friendship-1',
         });
 
-        // Simulation de requête Next.js avec une URL dynamique
         const url = `http://localhost:3000/api/users/${userId}`;
-        const request = new NextRequest(url);
+        const request = { nextUrl: new URL(url) } as unknown as NextRequest;
 
         const response = await GET(request);
         const data = await response.json();
@@ -68,9 +56,11 @@ describe('GET /api/users/[id]', () => {
             user: { id: 'user-456' },
         });
 
-        prismaMock.user.findUnique.mockResolvedValue(null);
+        (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-        const request = new NextRequest('http://localhost:3000/api/users/user-inconnu');
+        const url = `http://localhost:3000/api/users/user-inconnu`;
+        const request = { nextUrl: new URL(url) } as unknown as NextRequest;
+
         const response = await GET(request);
         const data = await response.json();
 
@@ -79,7 +69,9 @@ describe('GET /api/users/[id]', () => {
     });
 
     it("renvoie 400 si l'id est manquant", async () => {
-        const request = new NextRequest('http://localhost:3000/api/users/');
+        const url = `http://localhost:3000/api/users/`;
+        const request = { nextUrl: new URL(url) } as unknown as NextRequest;
+
         const response = await GET(request);
         const data = await response.json();
 

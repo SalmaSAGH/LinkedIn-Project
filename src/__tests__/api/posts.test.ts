@@ -5,8 +5,9 @@ jest.mock('next-auth', () => ({
     getServerSession: jest.fn(),
 }));
 
+// Mock complet de prisma
 jest.mock('@/lib/prisma', () => {
-    const prismaMock = {
+    return {
         user: {
             findUnique: jest.fn(),
         },
@@ -22,24 +23,20 @@ jest.mock('@/lib/prisma', () => {
             findMany: jest.fn(),
         },
     };
-
-    return {
-        __esModule: true,
-        default: prismaMock,
-    };
 });
 
-const prismaMock = jest.requireMock('@/lib/prisma').default;
+import prisma from '@/lib/prisma';
 
 describe('GET /api/posts', () => {
     it('renvoie les posts de l’utilisateur et ses amis', async () => {
+        // Cast en jest.Mock pour que TS accepte mockResolvedValue
         (getServerSession as jest.Mock).mockResolvedValue({
             user: { email: 'salma@example.com' },
         });
 
-        prismaMock.user.findUnique.mockResolvedValue({ id: 'user-1' });
+        (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1' });
 
-        prismaMock.post.findMany.mockResolvedValue([
+        (prisma.post.findMany as jest.Mock).mockResolvedValue([
             {
                 id: 'post-1',
                 userId: 'user-1',
@@ -56,10 +53,10 @@ describe('GET /api/posts', () => {
             },
         ]);
 
-        prismaMock.like.count.mockResolvedValue(3);
-        prismaMock.comment.count.mockResolvedValue(2);
-        prismaMock.like.findFirst.mockResolvedValue({ id: 'like-1' });
-        prismaMock.comment.findMany.mockResolvedValue([]);
+        (prisma.like.count as jest.Mock).mockResolvedValue(3);
+        (prisma.comment.count as jest.Mock).mockResolvedValue(2);
+        (prisma.like.findFirst as jest.Mock).mockResolvedValue({ id: 'like-1' });
+        (prisma.comment.findMany as jest.Mock).mockResolvedValue([]);
 
         const response = await GET();
         const data = await response.json();
