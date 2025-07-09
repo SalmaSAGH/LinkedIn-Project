@@ -14,7 +14,7 @@ L’application permet aux utilisateurs de créer leur profil, publier du conten
 - **ORM** : [Prisma](https://www.prisma.io/)  
 - **Déploiement** : [Vercel](https://vercel.com/)  
 - **Langage** : TypeScript  
-- **Authentification** : Email + mot de passe (custom logic ou future intégration NextAuth)
+- **Authentification** : Email + mot de passe 
 
 ---
 
