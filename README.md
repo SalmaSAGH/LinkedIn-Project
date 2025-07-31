@@ -2,6 +2,10 @@
 
 Bienvenue dans le projet **LinkedIn-Project**, un clone simplifié de LinkedIn réalisé dans le cadre d’un stage d’été.  
 L’application permet aux utilisateurs de créer leur profil, publier du contenu, interagir avec d'autres professionnels et gérer leur réseau.
+Tu peux ajouter cette phrase juste après ton paragraphe pour une transition fluide :
+
+> Ce projet a été réalisé sous l’encadrement et avec l’aide précieuse du professeur [Yann BENMAISSA](https://github.com/yannbms), dont le soutien et les conseils ont grandement contribué à sa réussite.
+
 
 > **Lien du dépôt GitHub :** [https://github.com/SalmaSAGH/LinkedIn-Project](https://github.com/SalmaSAGH/LinkedIn-Project)
 
